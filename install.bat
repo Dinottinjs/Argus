@@ -37,7 +37,7 @@ echo [+] Environment prepared.
 echo.
 echo [*] Building and Starting Docker Containers...
 echo This may take several minutes on the first run.
-docker-compose up --build -d
+docker compose up --build -d
 
 echo.
 echo [*] Creating Desktop Shortcut...

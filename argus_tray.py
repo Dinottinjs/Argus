@@ -95,7 +95,7 @@ def perform_uninstall():
     print("Starting uninstall sequence...")
     # Stop Docker Compose
     try:
-        subprocess.run(["docker-compose", "down"], cwd=os.path.dirname(os.path.abspath(__file__)), shell=True)
+        subprocess.run(["docker", "compose", "down"], cwd=os.path.dirname(os.path.abspath(__file__)), shell=True)
     except Exception as e:
         print(f"Error stopping docker: {e}")
     
