@@ -12,9 +12,9 @@ app = FastAPI(title="Argus Global Intelligence API")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=["http://localhost:3000", "http://127.0.0.1:3000"],
     allow_credentials=True,
-    allow_methods=["*"],
+    allow_methods=["GET", "POST", "OPTIONS"],
     allow_headers=["*"],
 )
 
@@ -74,6 +74,11 @@ async def websocket_endpoint(websocket: WebSocket):
             # We don't expect messages from client, but we must listen to keep connection alive
             await websocket.receive_bytes()
     except WebSocketDisconnect:
+        manager.disconnect(websocket)
+    except Exception as e:
+        print(f"WebSocket Error: {e}")
+        manager.disconnect(websocket)
+    finally:
         manager.disconnect(websocket)
 
 @app.on_event("startup")

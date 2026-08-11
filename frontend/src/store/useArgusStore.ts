@@ -38,7 +38,7 @@ export const useArgusStore = create<ArgusStore>((set, get) => ({
         } else if (type === 'BATCH_EVENTS') {
             set((state) => {
                 // Merge old events with new batch
-                const merged = [...events, ...state.events].slice(0, 5000); // UI holds up to 5000 in memory
+                const merged = [...events, ...state.events].slice(0, 100); // UI holds up to 100 in memory (Memory Leak Fix)
                 
                 // Also merge binary positions for DeckGL
                 let newPositions = binaryData.positions;
@@ -46,8 +46,8 @@ export const useArgusStore = create<ArgusStore>((set, get) => ({
                     const combined = new Float32Array(state.binaryPositions.length + newPositions.length);
                     combined.set(newPositions, 0);
                     combined.set(state.binaryPositions, newPositions.length);
-                    // Keep up to 5000 points (10000 floats)
-                    newPositions = combined.length > 10000 ? combined.slice(0, 10000) : combined;
+                    // Keep up to 500 points (1000 floats) to prevent WebGL crashes
+                    newPositions = combined.length > 1000 ? combined.slice(0, 1000) : combined;
                 } else if (state.binaryPositions && !newPositions) {
                     newPositions = state.binaryPositions;
                 }
