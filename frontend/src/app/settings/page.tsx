@@ -26,8 +26,12 @@ export default function SettingsPage() {
 
   const handleSaveNetwork = () => {
     localStorage.setItem("argus_network_interface", selectedInterface);
-    // In a full implementation, we'd send this to the FastAPI backend
-    // fetch("http://localhost:8000/api/settings/network", { method: "POST", body: JSON.stringify({ interface: selectedInterface }) })
+    // Send to FastAPI backend
+    fetch("http://localhost:8000/api/settings/network", { 
+      method: "POST", 
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ interface: selectedInterface }) 
+    }).catch(err => console.error(err));
     setStatusMsg("Network settings saved for 24/7 reliability.");
     setTimeout(() => setStatusMsg(""), 3000);
   };

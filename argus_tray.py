@@ -104,9 +104,11 @@ def perform_uninstall():
     if os.path.exists(shortcut_path):
         os.remove(shortcut_path)
 
-    # In a real scenario, this script would kill itself and delete its parent directory.
-    # To prevent actual accidental deletion of the dev workspace during review, we simulate it or execute cautiously.
-    # We will just stop the tray icon.
+    # Delete the Argus-Dev directory using a detached CMD so the Python script doesn't block its own deletion
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    delete_cmd = f'timeout /t 2 /nobreak >nul & rmdir /s /q "{current_dir}"'
+    subprocess.Popen(f'cmd.exe /c "{delete_cmd}"', shell=True)
+
     global tray_icon
     if tray_icon:
         tray_icon.stop()

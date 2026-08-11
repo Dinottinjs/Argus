@@ -8,6 +8,7 @@ import time
 from typing import List
 
 app = FastAPI(title="Argus Global Intelligence API")
+active_network_interface = ""
 
 # Enable CORS for the Next.js frontend
 app.add_middleware(
@@ -43,6 +44,13 @@ manager = ConnectionManager()
 def read_root():
     return {"status": "Argus Backend is running."}
 
+@app.post("/api/settings/network")
+async def update_network(req: dict):
+    global active_network_interface
+    active_network_interface = req.get("interface", "")
+    print(f"Network bound to: {active_network_interface}")
+    return {"status": "success"}
+
 @app.websocket("/ws/live")
 async def websocket_endpoint(websocket: WebSocket):
     await manager.connect(websocket)
@@ -54,7 +62,10 @@ async def websocket_endpoint(websocket: WebSocket):
 
 # Data Collectors
 async def fetch_usgs_earthquakes():
-    async with httpx.AsyncClient() as client:
+    # If network interface is specified, use httpx Transport
+    transport = httpx.AsyncHTTPTransport(local_address=active_network_interface) if active_network_interface else httpx.AsyncHTTPTransport()
+    
+    async with httpx.AsyncClient(transport=transport) as client:
         try:
             # All Earthquakes in the past hour
             resp = await client.get("https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_hour.geojson", timeout=10)

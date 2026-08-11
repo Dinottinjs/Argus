@@ -2,8 +2,8 @@
 import React from 'react';
 import DeckGL from '@deck.gl/react';
 import { ScatterplotLayer } from '@deck.gl/layers';
-import { HeatmapLayer } from '@deck.gl/geo-layers';
-import { Map as MapGL } from 'react-map-gl';
+import { HeatmapLayer } from '@deck.gl/aggregation-layers';
+import { Map as MapGL } from 'react-map-gl/maplibre';
 import { useArgusStore } from '@/store/useArgusStore';
 
 const INITIAL_VIEW_STATE = {
