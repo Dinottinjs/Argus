@@ -1,5 +1,6 @@
 $ErrorActionPreference = 'Stop'
 $ProgressPreference = 'SilentlyContinue' # Disable default slow progress bar
+[Console]::OutputEncoding = [System.Text.Encoding]::UTF8 # Fix progress bar weird characters
 
 # Modern Fast Download Function
 function Invoke-FastDownload {
@@ -145,9 +146,19 @@ try {
     }
 }
 
-# 4. Argus Setup (Docker Compose)
-Write-Host "`n[*] Baue und Starte Argus Container System..." -ForegroundColor Cyan
+# 4. Auto-Update & Repair
+Write-Host "`n[*] Pruefe auf Updates und repariere System (Git Pull)..." -ForegroundColor Cyan
 Set-Location $PSScriptRoot
+try {
+    & git fetch origin main 2>&1 | Out-Null
+    & git pull origin main 2>&1 | Out-Null
+    Write-Host "[+] Argus ist auf dem neuesten Stand!" -ForegroundColor Green
+} catch {
+    Write-Host "[!] Auto-Update übersprungen (Git evtl. nicht gefunden)." -ForegroundColor Yellow
+}
+
+# 5. Argus Setup (Docker Compose)
+Write-Host "`n[*] Baue und Starte Argus Container System..." -ForegroundColor Cyan
 & docker compose up --build -d
 
 # 5. Companion App
