@@ -14,7 +14,7 @@ const GlobalMap = dynamic(() => import("@/components/Map"), {
 });
 
 export default function ArgusDashboard() {
-  const { events, status, stats, initWorker } = useArgusStore();
+  const { events, status, stats, showHeatmap, showScatterplot, toggleHeatmap, toggleScatterplot, initWorker } = useArgusStore();
 
   useEffect(() => {
     initWorker();
@@ -57,10 +57,10 @@ export default function ArgusDashboard() {
       </header>
 
       {/* MAIN LAYOUT */}
-      <div className="flex flex-1 overflow-hidden">
+      <div className="flex flex-col md:flex-row flex-1 overflow-hidden">
         {/* LEFT SIDEBAR - TICKER */}
-        <aside className="w-80 glass-panel flex flex-col z-10 m-4 rounded-xl border-t border-l">
-          <div className="p-4 border-b border-cyan-500/20 flex items-center gap-2 bg-black/20 rounded-t-xl relative overflow-hidden">
+        <aside className="w-full md:w-64 lg:w-80 h-[30vh] md:h-auto glass-panel flex flex-col z-10 m-0 md:m-4 md:mr-0 rounded-none md:rounded-xl border-t md:border-l">
+          <div className="p-4 border-b border-cyan-500/20 flex items-center gap-2 bg-black/20 md:rounded-t-xl relative overflow-hidden">
             <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-primary to-transparent opacity-50" />
             <Activity className="h-4 w-4 text-primary animate-pulse-glow" />
             <h2 className="text-sm font-semibold uppercase tracking-wider text-primary neon-text">Live Feed</h2>
@@ -91,25 +91,35 @@ export default function ArgusDashboard() {
         </aside>
 
         {/* CENTER - 3D MAP */}
-        <main className="flex-1 relative bg-transparent rounded-xl m-4 ml-0 overflow-hidden border border-cyan-500/20 shadow-[0_0_30px_rgba(6,182,212,0.1)]">
+        <main className="flex-1 relative bg-transparent md:rounded-xl m-0 md:m-4 md:ml-4 lg:ml-4 overflow-hidden border-y md:border border-cyan-500/20 shadow-[0_0_30px_rgba(6,182,212,0.1)]">
           <GlobalMap />
           
           {/* Overlay UI on map */}
-          <div className="absolute bottom-6 left-6 z-20 flex gap-2">
-            <Button variant="secondary" size="sm" className="glass-panel-hover bg-black/60 text-slate-300 border-cyan-500/30">
-              <Globe2 className="h-4 w-4 mr-2 text-primary" /> Topography
+          <div className="absolute bottom-6 left-6 z-20 flex flex-wrap gap-2">
+            <Button 
+              variant="secondary" 
+              size="sm" 
+              onClick={toggleScatterplot}
+              className={`glass-panel-hover transition-all ${showScatterplot ? 'bg-primary/20 text-primary border-primary shadow-[0_0_15px_rgba(6,182,212,0.4)]' : 'bg-black/60 text-slate-400 border-cyan-500/30'}`}
+            >
+              <Globe2 className="h-4 w-4 mr-2" /> Topography
             </Button>
-            <Button variant="secondary" size="sm" className="glass-panel-hover bg-black/60 text-primary border-cyan-500/50 shadow-[0_0_10px_rgba(6,182,212,0.2)]">
+            <Button 
+              variant="secondary" 
+              size="sm" 
+              onClick={toggleHeatmap}
+              className={`glass-panel-hover transition-all ${showHeatmap ? 'bg-orange-500/20 text-orange-400 border-orange-500 shadow-[0_0_15px_rgba(249,115,22,0.4)]' : 'bg-black/60 text-slate-400 border-cyan-500/30'}`}
+            >
               <AlertTriangle className="h-4 w-4 mr-2" /> Heatmap
             </Button>
           </div>
         </main>
         
         {/* RIGHT SIDEBAR - ANALYTICS */}
-        <aside className="w-80 glass-panel flex flex-col z-10 m-4 ml-0 p-4 rounded-xl border-t border-r relative overflow-hidden">
+        <aside className="w-full md:w-64 lg:w-80 h-[30vh] md:h-auto glass-panel flex flex-col z-10 m-0 md:m-4 md:ml-0 p-4 rounded-none md:rounded-xl border-t md:border-r relative overflow-y-auto">
           <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-l from-transparent via-primary to-transparent opacity-50" />
           
-          <div className="mb-8">
+          <div className="mb-8 shrink-0">
             <h2 className="text-sm font-semibold uppercase tracking-wider text-primary neon-text mb-4">Global Sentiment</h2>
             <div className="h-2 w-full bg-black/50 rounded-full overflow-hidden flex border border-cyan-500/20 shadow-[inset_0_0_5px_rgba(0,0,0,0.5)]">
               <div className="h-full bg-destructive shadow-[0_0_10px_rgba(255,0,0,0.8)] transition-all duration-1000" style={{ width: `${100 - (stats?.sentiment || 50)}%` }}></div>
@@ -121,7 +131,7 @@ export default function ArgusDashboard() {
             </div>
           </div>
           
-          <div className="mb-6">
+          <div className="mb-6 shrink-0">
             <h2 className="text-sm font-semibold uppercase tracking-wider text-primary neon-text mb-4">Live Markets (Binance)</h2>
             <div className="space-y-3">
               <div className="glass-panel-hover p-3 rounded-lg flex justify-between items-center border border-cyan-500/10">
@@ -135,7 +145,7 @@ export default function ArgusDashboard() {
             </div>
           </div>
           
-          <div className="mt-auto mb-2">
+          <div className="mt-auto mb-2 shrink-0">
             <h2 className="text-sm font-semibold uppercase tracking-wider text-primary neon-text mb-4">System Telemetry</h2>
             <div className="grid grid-cols-2 gap-2 text-xs font-mono">
                 <div className="p-2 bg-black/40 rounded border border-cyan-500/10 text-center">
@@ -149,6 +159,26 @@ export default function ArgusDashboard() {
             </div>
           </div>
         </aside>
+      </div>
+
+      {/* BOTTOM TICKER - BLOOMBERG STYLE */}
+      <div className="h-8 w-full bg-black/90 border-t border-cyan-500/30 flex items-center overflow-hidden whitespace-nowrap shrink-0 shadow-[0_-5px_15px_rgba(0,0,0,0.8)] z-50">
+        <div className="bg-primary/20 text-primary font-bold px-4 py-1 text-xs uppercase tracking-widest border-r border-cyan-500/50 z-10 shrink-0 h-full flex items-center shadow-[5px_0_10px_rgba(0,0,0,0.5)]">
+          ARGUS TICKER
+        </div>
+        <div className="flex-1 overflow-hidden relative">
+          <div className="animate-marquee flex items-center gap-8 pl-4">
+            <span className="text-green-400 font-mono text-xs font-bold">BTC/USDT ${stats?.btc_price?.toLocaleString() || "---"} ▲</span>
+            <span className="text-green-400 font-mono text-xs font-bold">ETH/USDT ${stats?.eth_price?.toLocaleString() || "---"} ▲</span>
+            <span className="text-primary/50 font-mono text-xs">|</span>
+            {events.slice(0, 10).map(event => (
+              <span key={`ticker-${event.id}`} className="text-xs font-mono text-slate-300">
+                <span className={event.type === 'CRITICAL' ? 'text-destructive' : event.type === 'HIGH' ? 'text-orange-500' : 'text-primary'}>[{event.type}]</span> {event.title}
+                <span className="text-primary/50 ml-8">|</span>
+              </span>
+            ))}
+          </div>
+        </div>
       </div>
     </div>
   );

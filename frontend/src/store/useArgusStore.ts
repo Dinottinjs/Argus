@@ -19,7 +19,11 @@ interface ArgusStore {
     sentiment: number;
   } | null;
   worker: Worker | null;
+  showHeatmap: boolean;
+  showScatterplot: boolean;
   initWorker: () => void;
+  toggleHeatmap: () => void;
+  toggleScatterplot: () => void;
 }
 
 export const useArgusStore = create<ArgusStore>((set, get) => ({
@@ -28,6 +32,11 @@ export const useArgusStore = create<ArgusStore>((set, get) => ({
   status: "OFFLINE",
   stats: null,
   worker: null,
+  showHeatmap: true,
+  showScatterplot: true,
+  
+  toggleHeatmap: () => set((state) => ({ showHeatmap: !state.showHeatmap })),
+  toggleScatterplot: () => set((state) => ({ showScatterplot: !state.showScatterplot })),
   
   initWorker: () => {
     if (get().worker) return; // already initialized

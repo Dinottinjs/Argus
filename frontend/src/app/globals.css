@@ -175,6 +175,20 @@
     0% { background-color: rgba(6, 182, 212, 0.4); box-shadow: 0 0 15px rgba(6, 182, 212, 0.8); }
     100% { background-color: transparent; box-shadow: none; }
   }
+  
+  @keyframes marquee {
+    0% { transform: translateX(100vw); }
+    100% { transform: translateX(-100%); }
+  }
+  
+  .animate-marquee {
+    animation: marquee 30s linear infinite;
+    will-change: transform;
+  }
+  
+  .animate-marquee:hover {
+    animation-play-state: paused;
+  }
 }
 
 @keyframes scanner {
