@@ -21,13 +21,26 @@ app.add_middleware(
 
 class ConnectionManager:
     def __init__(self):
-        self.active_connections = set()
-        self.redis_client = None
-        self.pubsub = None
+        self.active_connections: set[WebSocket] = set()
+        self.recent_events: list[bytes] = []
+        self.recent_stats: bytes = None
 
     async def connect(self, websocket: WebSocket):
         await websocket.accept()
         self.active_connections.add(websocket)
+        
+        # INSTANT DATA LOAD: Send cached stats and events immediately
+        if self.recent_stats:
+            try:
+                await websocket.send_bytes(self.recent_stats)
+            except Exception:
+                pass
+                
+        for event in self.recent_events:
+            try:
+                await websocket.send_bytes(event)
+            except Exception:
+                pass
 
     def disconnect(self, websocket: WebSocket):
         if websocket in self.active_connections:
@@ -43,14 +56,31 @@ class ConnectionManager:
 
     async def redis_listener(self):
         self.redis_client = await redis.from_url(REDIS_URL)
-        self.pubsub = self.redis_client.pubsub()
-        await self.pubsub.subscribe("argus_live_events")
+        pubsub = self.redis_client.pubsub()
+        await pubsub.subscribe("argus_live_events")
         print("Subscribed to Redis PubSub: argus_live_events")
         
-        async for message in self.pubsub.listen():
-            if message["type"] == "message":
-                # Data is already JSON encoded bytes from worker, broadcast immediately
-                await self.broadcast(message["data"])
+        try:
+            while True:
+                message = await pubsub.get_message(ignore_subscribe_messages=True, timeout=1.0)
+                if message and message["type"] == "message":
+                    data_bytes = message["data"]
+                    
+                    # Update Cache
+                    try:
+                        parsed = orjson.loads(data_bytes)
+                        if parsed.get("type") == "STATS":
+                            self.recent_stats = data_bytes
+                        elif parsed.get("type") == "NEW_EVENT":
+                            self.recent_events.append(data_bytes)
+                            if len(self.recent_events) > 100:
+                                self.recent_events.pop(0)
+                    except Exception:
+                        pass
+                        
+                    await self.broadcast(data_bytes)
+        except asyncio.CancelledError:
+            pass
 
 manager = ConnectionManager()
 

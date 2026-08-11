@@ -65,20 +65,28 @@ export default function ArgusDashboard() {
             <Activity className="h-4 w-4 text-primary animate-pulse-glow" />
             <h2 className="text-sm font-semibold uppercase tracking-wider text-primary neon-text">Live Feed</h2>
           </div>
-          <div className="flex-1 overflow-y-auto p-4 space-y-3 custom-scrollbar">
-            {events.length === 0 && <div className="text-xs text-muted-foreground text-center mt-10">Waiting for live signals...</div>}
-            {events.map(event => (
-              <div key={event.id} className="p-3 rounded-md bg-black/40 border border-cyan-500/10 glass-panel-hover group cursor-pointer relative overflow-hidden">
-                <div className="absolute left-0 top-0 w-1 h-full bg-primary/0 group-hover:bg-primary transition-colors" />
-                <div className="flex items-center justify-between mb-1">
-                  <Badge variant={event.type === 'CRITICAL' ? 'destructive' : event.type === 'HIGH' ? 'secondary' : 'default'} className="text-[10px]">
-                    {event.type}
-                  </Badge>
-                  <span className="text-xs text-primary/60 font-mono">{event.time}</span>
-                </div>
-                <p className="text-sm font-medium text-slate-200 group-hover:text-white transition-colors">{event.title}</p>
+          <div className="flex-1 overflow-y-auto overflow-x-hidden p-4 space-y-3 custom-scrollbar relative z-10">
+            {events.length === 0 ? (
+              <div className="h-full flex items-center justify-center text-xs text-primary/50 font-mono animate-pulse">
+                Waiting for live signals...
               </div>
-            ))}
+            ) : (
+              events.map((event, i) => (
+                <div key={event.id} className={`glass-panel-hover p-3 rounded-lg border-l-2 text-sm shadow-[0_0_15px_rgba(0,0,0,0.5)] transform transition-all hover:scale-105 hover:-translate-y-1 ${i === 0 ? 'animate-slide-down neon-pulse-new' : ''} ${event.type === 'CRITICAL' ? 'border-destructive' : event.type === 'HIGH' ? 'border-orange-500' : 'border-primary'}`}>
+                  <div className="flex justify-between items-start mb-2">
+                    <span className={`text-xs font-bold font-mono tracking-widest ${event.type === 'CRITICAL' ? 'text-destructive drop-shadow-[0_0_5px_rgba(255,0,0,0.8)]' : event.type === 'HIGH' ? 'text-orange-500' : 'text-primary'}`}>
+                      {event.type}
+                    </span>
+                    <span className="text-[10px] text-primary/50 font-mono">{event.time}</span>
+                  </div>
+                  <p className="text-white/90 text-xs font-medium leading-relaxed drop-shadow-md">{event.title}</p>
+                  <div className="mt-2 text-[10px] text-primary/40 flex justify-between font-mono">
+                    <span>SRC: {event.source}</span>
+                    <span>ID: {event.id.substring(0,8)}</span>
+                  </div>
+                </div>
+              ))
+            )}
           </div>
         </aside>
 
