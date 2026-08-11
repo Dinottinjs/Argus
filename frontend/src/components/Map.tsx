@@ -15,18 +15,19 @@ const INITIAL_VIEW_STATE = {
 };
 
 export default function GlobalMap() {
-  const { events } = useArgusStore();
+  const { events, binaryPositions } = useArgusStore();
 
   const layers = [
     new ScatterplotLayer({
       id: 'scatter-layer',
-      data: events.filter(e => e.coordinates && e.coordinates.length === 2 && e.coordinates[0] !== 0),
-      getPosition: (d: any) => d.coordinates,
-      getFillColor: (d: any) => d.type === 'CRITICAL' ? [255, 0, 0, 200] : d.type === 'HIGH' ? [255, 165, 0, 180] : [0, 255, 255, 150],
-      getRadius: (d: any) => d.type === 'CRITICAL' ? 300000 : d.type === 'HIGH' ? 150000 : 80000,
+      // If we have binary positions, we use them for ultra-fast GPU rendering
+      data: binaryPositions ? { length: binaryPositions.length / 2, attributes: { getPosition: { value: binaryPositions, size: 2 } } } : events.filter(e => e.coordinates && e.coordinates.length === 2 && e.coordinates[0] !== 0),
+      getPosition: binaryPositions ? undefined : ((d: any) => d.coordinates),
+      getFillColor: binaryPositions ? [255, 50, 50, 200] : ((d: any) => d.type === 'CRITICAL' ? [255, 0, 0, 200] : d.type === 'HIGH' ? [255, 165, 0, 180] : [0, 255, 255, 150]),
+      getRadius: binaryPositions ? 150000 : ((d: any) => d.type === 'CRITICAL' ? 300000 : d.type === 'HIGH' ? 150000 : 80000),
       radiusMinPixels: 4,
       radiusMaxPixels: 20,
-      pickable: true
+      pickable: !binaryPositions // Disable picking on raw binary layer to save CPU
     }),
     new HeatmapLayer({
       id: 'heatmap-layer',

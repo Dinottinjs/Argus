@@ -14,53 +14,11 @@ const GlobalMap = dynamic(() => import("@/components/Map"), {
 });
 
 export default function ArgusDashboard() {
-  const { events, status, setStatus, addEvent } = useArgusStore();
+  const { events, status, initWorker } = useArgusStore();
 
   useEffect(() => {
-    let ws: WebSocket;
-    let reconnectTimer: NodeJS.Timeout;
-
-    const connect = () => {
-      setStatus("CONNECTING");
-      // Use env var or default
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
-      const wsUrl = apiUrl.replace("http", "ws") + "/ws/live";
-      
-      ws = new WebSocket(wsUrl);
-
-      ws.onopen = () => setStatus("ONLINE");
-      ws.onclose = () => {
-        setStatus("OFFLINE");
-        reconnectTimer = setTimeout(connect, 3000);
-      };
-      ws.onmessage = (msg) => {
-        try {
-          const payload = JSON.parse(msg.data);
-          if (payload.type === "NEW_EVENT") {
-            const data = payload.data;
-            const eventTime = data.timestamp ? new Date(data.timestamp).toLocaleTimeString() : new Date().toLocaleTimeString();
-            addEvent({
-              id: data.id,
-              type: data.type,
-              title: data.title,
-              time: eventTime,
-              coordinates: data.coordinates,
-              source: data.source
-            });
-          }
-        } catch (e) {
-          console.error("WS Parse Error", e);
-        }
-      };
-    };
-
-    connect();
-
-    return () => {
-      clearTimeout(reconnectTimer);
-      if (ws) ws.close();
-    };
-  }, [addEvent, setStatus]);
+    initWorker();
+  }, [initWorker]);
 
   return (
     <div className="flex flex-col h-screen overflow-hidden bg-background text-foreground">
