@@ -64,10 +64,10 @@ function connectWebSocket(url: string) {
             }
             
             // Push updated state back to main thread
-            // Instead of sending JSON, we *could* serialize to ArrayBuffer using a Wasm module here.
-            // For now, we batch updates every 100ms to prevent React re-render thrashing.
             batchUpdate(newEvent);
         }
+      } else if (payload.type === "STATS") {
+          self.postMessage({ type: 'UPDATE_STATS', stats: payload.data });
       }
     } catch (e) {
       console.error("Worker Parse Error", e);

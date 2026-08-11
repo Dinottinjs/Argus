@@ -140,7 +140,7 @@ try {
         } catch {}
         Write-Host -NoNewline "."
         if ($attempts -ge 24) {
-            Write-Host "`n[!] Timeout beim Warten auf Docker. Bitte Docker Desktop manuell prüfen." -ForegroundColor Red
+            Write-Host "`n[!] Timeout beim Warten auf Docker. Bitte Docker Desktop manuell pruefen." -ForegroundColor Red
             break
         }
     }
@@ -154,7 +154,7 @@ try {
     & git pull origin main 2>&1 | Out-Null
     Write-Host "[+] Argus ist auf dem neuesten Stand!" -ForegroundColor Green
 } catch {
-    Write-Host "[!] Auto-Update übersprungen (Git evtl. nicht gefunden)." -ForegroundColor Yellow
+    Write-Host "[!] Auto-Update uebersprungen (Git evtl. nicht gefunden)." -ForegroundColor Yellow
 }
 
 # 5. Argus Setup (Docker Compose)

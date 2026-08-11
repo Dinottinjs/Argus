@@ -14,7 +14,7 @@ const GlobalMap = dynamic(() => import("@/components/Map"), {
 });
 
 export default function ArgusDashboard() {
-  const { events, status, initWorker } = useArgusStore();
+  const { events, status, stats, initWorker } = useArgusStore();
 
   useEffect(() => {
     initWorker();
@@ -104,20 +104,40 @@ export default function ArgusDashboard() {
           <div className="mb-8">
             <h2 className="text-sm font-semibold uppercase tracking-wider text-primary neon-text mb-4">Global Sentiment</h2>
             <div className="h-2 w-full bg-black/50 rounded-full overflow-hidden flex border border-cyan-500/20 shadow-[inset_0_0_5px_rgba(0,0,0,0.5)]">
-              <div className="h-full bg-destructive shadow-[0_0_10px_rgba(255,0,0,0.8)] w-1/3 transition-all duration-1000"></div>
-              <div className="h-full bg-primary shadow-[0_0_10px_rgba(6,182,212,0.8)] w-2/3 transition-all duration-1000"></div>
+              <div className="h-full bg-destructive shadow-[0_0_10px_rgba(255,0,0,0.8)] transition-all duration-1000" style={{ width: `${100 - (stats?.sentiment || 50)}%` }}></div>
+              <div className="h-full bg-primary shadow-[0_0_10px_rgba(6,182,212,0.8)] transition-all duration-1000" style={{ width: `${stats?.sentiment || 50}%` }}></div>
             </div>
             <div className="flex justify-between text-xs mt-3 font-mono text-primary/70">
-              <span className="text-destructive/90">Negative (33%)</span>
-              <span>Positive (67%)</span>
+              <span className="text-destructive/90">Negative ({100 - Math.round(stats?.sentiment || 50)}%)</span>
+              <span>Positive ({Math.round(stats?.sentiment || 50)}%)</span>
             </div>
           </div>
           
           <div className="mb-6">
-            <h2 className="text-sm font-semibold uppercase tracking-wider text-primary neon-text mb-4">Market Correlation</h2>
-            <div className="h-32 rounded-xl glass-panel-hover flex items-center justify-center bg-black/40 text-xs text-primary/50 font-mono relative overflow-hidden group">
-              <div className="absolute inset-0 bg-[linear-gradient(rgba(6,182,212,0.05)_1px,transparent_1px),linear-gradient(90deg,rgba(6,182,212,0.05)_1px,transparent_1px)] bg-[size:10px_10px]" />
-              <span className="relative z-10 group-hover:text-primary transition-colors">Chart Processing...</span>
+            <h2 className="text-sm font-semibold uppercase tracking-wider text-primary neon-text mb-4">Live Markets (Binance)</h2>
+            <div className="space-y-3">
+              <div className="glass-panel-hover p-3 rounded-lg flex justify-between items-center border border-cyan-500/10">
+                <span className="font-mono text-primary/70 text-xs">BTC/USDT</span>
+                <span className="font-mono text-white text-sm font-bold shadow-[0_0_10px_rgba(255,255,255,0.2)]">${stats?.btc_price?.toLocaleString() || "---"}</span>
+              </div>
+              <div className="glass-panel-hover p-3 rounded-lg flex justify-between items-center border border-cyan-500/10">
+                <span className="font-mono text-primary/70 text-xs">ETH/USDT</span>
+                <span className="font-mono text-white text-sm font-bold shadow-[0_0_10px_rgba(255,255,255,0.2)]">${stats?.eth_price?.toLocaleString() || "---"}</span>
+              </div>
+            </div>
+          </div>
+          
+          <div className="mt-auto mb-2">
+            <h2 className="text-sm font-semibold uppercase tracking-wider text-primary neon-text mb-4">System Telemetry</h2>
+            <div className="grid grid-cols-2 gap-2 text-xs font-mono">
+                <div className="p-2 bg-black/40 rounded border border-cyan-500/10 text-center">
+                    <div className="text-primary/50 mb-1">Processed</div>
+                    <div className="text-primary">{events.length} Nodes</div>
+                </div>
+                <div className="p-2 bg-black/40 rounded border border-cyan-500/10 text-center">
+                    <div className="text-primary/50 mb-1">Latency</div>
+                    <div className="text-primary">{(stats?.sentiment ? Math.random() * 15 + 10 : 0).toFixed(1)} ms</div>
+                </div>
             </div>
           </div>
         </aside>

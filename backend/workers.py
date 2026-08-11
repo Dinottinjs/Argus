@@ -66,6 +66,31 @@ async def news_worker(r: redis.Redis, active_interface: str = ""):
             
         await asyncio.sleep(120)
 
+async def market_worker(r: redis.Redis, active_interface: str = ""):
+    print("Started Global Market Worker")
+    transport = httpx.AsyncHTTPTransport(local_address=active_interface) if active_interface else httpx.AsyncHTTPTransport()
+    
+    async with httpx.AsyncClient(transport=transport) as client:
+        while True:
+            try:
+                # Fetch BTC and ETH prices
+                resp = await client.get("https://api.binance.com/api/v3/ticker/price?symbols=[\"BTCUSDT\",\"ETHUSDT\"]", timeout=5)
+                if resp.status_code == 200:
+                    data = orjson.loads(resp.content)
+                    
+                    stats = {
+                        "btc_price": float(data[0]["price"]),
+                        "eth_price": float(data[1]["price"]),
+                        "sentiment": 65 + (float(data[0]["price"]) % 10), # Simulated sentiment based on price fluctuation
+                    }
+                    
+                    payload = orjson.dumps({"type": "STATS", "data": stats})
+                    await r.publish("argus_live_events", payload)
+            except Exception as e:
+                print(f"Market Worker Error: {e}")
+                
+            await asyncio.sleep(5) # Real-time every 5 seconds
+
 async def start_workers():
     r = await redis.from_url(REDIS_URL)
     # Could dynamically read interface from Redis config if needed
@@ -73,7 +98,8 @@ async def start_workers():
     
     await asyncio.gather(
         usgs_worker(r, active_interface),
-        news_worker(r, active_interface)
+        news_worker(r, active_interface),
+        market_worker(r, active_interface)
     )
 
 if __name__ == "__main__":

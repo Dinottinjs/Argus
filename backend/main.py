@@ -5,6 +5,7 @@ import redis.asyncio as redis
 import os
 import orjson
 import subprocess
+import sys
 
 REDIS_URL = os.getenv("REDIS_URL", "redis://localhost:6379")
 
@@ -88,4 +89,4 @@ async def startup_event():
     
     # Start the worker process (in a real production scenario, this runs in a separate Docker container)
     # We spawn it as a subprocess here for convenience in this single-container setup
-    subprocess.Popen(["python", "workers.py"])
+    subprocess.Popen([sys.executable, "-u", "workers.py"])

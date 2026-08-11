@@ -13,6 +13,11 @@ interface ArgusStore {
   events: ArgusEvent[];
   binaryPositions: Float32Array | null;
   status: string;
+  stats: {
+    btc_price: number;
+    eth_price: number;
+    sentiment: number;
+  } | null;
   worker: Worker | null;
   initWorker: () => void;
 }
@@ -21,6 +26,7 @@ export const useArgusStore = create<ArgusStore>((set, get) => ({
   events: [],
   binaryPositions: null,
   status: "OFFLINE",
+  stats: null,
   worker: null,
   
   initWorker: () => {
@@ -32,9 +38,11 @@ export const useArgusStore = create<ArgusStore>((set, get) => ({
     const worker = new Worker(new URL('../workers/data.worker.ts', import.meta.url));
     
     worker.onmessage = (e) => {
-        const { type, status, events, binaryData } = e.data;
+        const { type, status, events, binaryData, stats } = e.data;
         if (type === 'STATUS') {
             set({ status });
+        } else if (type === 'UPDATE_STATS') {
+            set({ stats });
         } else if (type === 'BATCH_EVENTS') {
             set((state) => {
                 // Merge old events with new batch
