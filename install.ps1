@@ -1,5 +1,67 @@
 $ErrorActionPreference = 'Stop'
-$ProgressPreference = 'Continue'
+$ProgressPreference = 'SilentlyContinue' # Disable default slow progress bar
+
+# Modern Fast Download Function
+function Invoke-FastDownload {
+    param (
+        [string]$Url,
+        [string]$OutFile,
+        [string]$Title
+    )
+    Write-Host "[*] $Title" -ForegroundColor Yellow
+    
+    # Force TLS 1.2
+    [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+    
+    $request = [System.Net.WebRequest]::Create($Url)
+    $response = $request.GetResponse()
+    $totalLength = $response.ContentLength
+    
+    $stream = $response.GetResponseStream()
+    $fileStream = [System.IO.File]::Create($OutFile)
+    
+    $buffer = New-Object byte[] 65536 # 64KB buffer for ultra-fast download
+    $read = 0
+    $downloaded = 0
+    
+    $stopwatch = [System.Diagnostics.Stopwatch]::StartNew()
+    
+    do {
+        $read = $stream.Read($buffer, 0, $buffer.Length)
+        if ($read -gt 0) {
+            $fileStream.Write($buffer, 0, $read)
+            $downloaded += $read
+            
+            # Update UI every 150ms to prevent console flickering
+            if ($stopwatch.ElapsedMilliseconds -gt 150) {
+                $stopwatch.Restart()
+                $percent = 0
+                if ($totalLength -gt 0) {
+                    $percent = [math]::Floor(($downloaded / $totalLength) * 100)
+                }
+                
+                $mbReceived = "{0:N2}" -f ($downloaded / 1MB)
+                $mbTotal = "{0:N2}" -f ($totalLength / 1MB)
+                
+                $barLength = 40
+                $filled = [math]::Floor(($percent / 100) * $barLength)
+                if ($filled -lt 0) { $filled = 0 }
+                $empty = $barLength - $filled
+                if ($empty -lt 0) { $empty = 0 }
+                
+                $bar = ("█" * $filled) + ("░" * $empty)
+                
+                Write-Host "`r    [$bar] $percent% ($mbReceived MB / $mbTotal MB)" -NoNewline -ForegroundColor Cyan
+            }
+        }
+    } while ($read -gt 0)
+    
+    $fileStream.Close()
+    $stream.Close()
+    $response.Close()
+    
+    Write-Host "`r    [████████████████████████████████████████] 100% (Download abgeschlossen)                    `n" -ForegroundColor Green
+}
 
 Write-Host "=======================================================" -ForegroundColor Cyan
 Write-Host "         ARGUS COMMAND CENTER - AUTONOMOUS SETUP" -ForegroundColor Cyan
@@ -12,18 +74,15 @@ try {
     $pythonVersion = & python --version 2>&1
     Write-Host "[+] Python ist bereits installiert: $pythonVersion" -ForegroundColor Green
 } catch {
-    Write-Host "[!] Python nicht gefunden. Starte Download..." -ForegroundColor Yellow
     $pyUrl = "https://www.python.org/ftp/python/3.11.8/python-3.11.8-amd64.exe"
     $pyFile = "$env:TEMP\python_installer.exe"
     
-    # Progress Bar is shown automatically by Invoke-WebRequest in PowerShell
-    Invoke-WebRequest -Uri $pyUrl -OutFile $pyFile
+    Invoke-FastDownload -Url $pyUrl -OutFile $pyFile -Title "Python nicht gefunden. Lade Python 3.11 herunter..."
     
     Write-Host "[*] Installiere Python still im Hintergrund..." -ForegroundColor Cyan
     $process = Start-Process -FilePath $pyFile -ArgumentList "/quiet InstallAllUsers=1 PrependPath=1 Include_test=0" -Wait -PassThru
     if ($process.ExitCode -eq 0) {
         Write-Host "[+] Python erfolgreich installiert." -ForegroundColor Green
-        # Refresh PATH
         $env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path","User")
     } else {
         Write-Host "[!] Python Installation fehlgeschlagen. (Code: $($process.ExitCode))" -ForegroundColor Red
@@ -36,17 +95,15 @@ try {
     $dockerVersion = & docker --version 2>&1
     Write-Host "[+] Docker ist bereits installiert: $dockerVersion" -ForegroundColor Green
 } catch {
-    Write-Host "[!] Docker nicht gefunden. Starte Download (~600MB)..." -ForegroundColor Yellow
     $dockerUrl = "https://desktop.docker.com/win/main/amd64/Docker%20Desktop%20Installer.exe"
     $dockerFile = "$env:TEMP\DockerInstaller.exe"
     
-    Invoke-WebRequest -Uri $dockerUrl -OutFile $dockerFile
+    Invoke-FastDownload -Url $dockerUrl -OutFile $dockerFile -Title "Docker nicht gefunden. Lade Docker Desktop herunter (~600MB)..."
     
-    Write-Host "[*] Installiere Docker Desktop still im Hintergrund (dies dauert einige Minuten)..." -ForegroundColor Cyan
+    Write-Host "[*] Installiere Docker Desktop still im Hintergrund (dies dauert 1-3 Minuten)..." -ForegroundColor Cyan
     $process = Start-Process -FilePath $dockerFile -ArgumentList "install --quiet --accept-license" -Wait -PassThru
     if ($process.ExitCode -eq 0) {
         Write-Host "[+] Docker Desktop erfolgreich installiert." -ForegroundColor Green
-        # Refresh PATH
         $env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path","User")
     } else {
         Write-Host "[!] Docker Installation fehlgeschlagen oder erfordert manuellen Neustart. (Code: $($process.ExitCode))" -ForegroundColor Red
