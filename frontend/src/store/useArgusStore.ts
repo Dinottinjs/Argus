@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { persist } from 'zustand/middleware';
 
 interface ArgusEvent {
   id: string;
@@ -22,16 +23,25 @@ interface ArgusStore {
   isPaused: boolean;
   reduceMotion: boolean;
   localOnlyMode: boolean;
+  showLeftSidebar: boolean;
+  showRightSidebar: boolean;
+  showTicker: boolean;
   initWorker: () => void;
   toggleHeatmap: () => void;
   toggleScatterplot: () => void;
   togglePause: () => void;
   toggleReduceMotion: () => void;
   toggleLocalOnlyMode: () => void;
+  toggleLeftSidebar: () => void;
+  toggleRightSidebar: () => void;
+  toggleTicker: () => void;
   clearEvents: () => void;
+  resetUI: () => void;
 }
 
-export const useArgusStore = create<ArgusStore>((set, get) => ({
+export const useArgusStore = create<ArgusStore>()(
+  persist(
+    (set, get) => ({
   events: [],
   binaryPositions: null,
   status: "OFFLINE",
@@ -42,13 +52,30 @@ export const useArgusStore = create<ArgusStore>((set, get) => ({
   isPaused: false,
   reduceMotion: false,
   localOnlyMode: false,
+  showLeftSidebar: true,
+  showRightSidebar: true,
+  showTicker: true,
   
   toggleHeatmap: () => set((state) => ({ showHeatmap: !state.showHeatmap })),
   toggleScatterplot: () => set((state) => ({ showScatterplot: !state.showScatterplot })),
   togglePause: () => set((state) => ({ isPaused: !state.isPaused })),
   toggleReduceMotion: () => set((state) => ({ reduceMotion: !state.reduceMotion })),
   toggleLocalOnlyMode: () => set((state) => ({ localOnlyMode: !state.localOnlyMode })),
+  toggleLeftSidebar: () => set((state) => ({ showLeftSidebar: !state.showLeftSidebar })),
+  toggleRightSidebar: () => set((state) => ({ showRightSidebar: !state.showRightSidebar })),
+  toggleTicker: () => set((state) => ({ showTicker: !state.showTicker })),
   clearEvents: () => set({ events: [], binaryPositions: null }),
+  
+  resetUI: () => set({ 
+    showHeatmap: true, 
+    showScatterplot: true, 
+    reduceMotion: false, 
+    localOnlyMode: false,
+    showLeftSidebar: true,
+    showRightSidebar: true,
+    showTicker: true,
+    isPaused: false
+  }),
   
   initWorker: () => {
     if (get().worker) return; // already initialized
@@ -100,4 +127,18 @@ export const useArgusStore = create<ArgusStore>((set, get) => ({
     
     set({ worker });
   }
-}));
+}),
+{
+  name: 'argus-storage',
+  partialize: (state) => ({ 
+    showHeatmap: state.showHeatmap, 
+    showScatterplot: state.showScatterplot, 
+    reduceMotion: state.reduceMotion, 
+    localOnlyMode: state.localOnlyMode,
+    showLeftSidebar: state.showLeftSidebar,
+    showRightSidebar: state.showRightSidebar,
+    showTicker: state.showTicker
+  }),
+}
+)
+);

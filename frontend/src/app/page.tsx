@@ -18,6 +18,7 @@ export default function ArgusDashboard() {
     events, status, stats, 
     showHeatmap, showScatterplot, 
     isPaused, reduceMotion,
+    showLeftSidebar, showRightSidebar, showTicker,
     toggleHeatmap, toggleScatterplot, 
     togglePause, clearEvents,
     initWorker 
@@ -66,7 +67,8 @@ export default function ArgusDashboard() {
       {/* MAIN LAYOUT */}
       <div className="flex flex-col md:flex-row flex-1 overflow-hidden">
         {/* LEFT SIDEBAR - TICKER */}
-        <aside className="w-full md:w-64 lg:w-80 h-[30vh] md:h-auto glass-panel flex flex-col z-10 m-0 md:m-4 md:mr-0 rounded-none md:rounded-xl border-t md:border-l">
+        {showLeftSidebar && (
+        <aside className="w-full md:w-64 lg:w-80 h-[30vh] md:h-auto glass-panel flex flex-col z-10 m-0 md:m-4 md:mr-0 rounded-none md:rounded-xl border-t md:border-l transition-all duration-300 ease-in-out">
           <div className="p-4 border-b border-cyan-500/20 flex items-center gap-2 bg-black/20 md:rounded-t-xl relative overflow-hidden">
             <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-primary to-transparent opacity-50" />
             <Activity className="h-4 w-4 text-primary animate-pulse-glow" />
@@ -96,6 +98,7 @@ export default function ArgusDashboard() {
             )}
           </div>
         </aside>
+        )}
 
         {/* CENTER - 3D MAP */}
         <main className="flex-1 relative bg-transparent md:rounded-xl m-0 md:m-4 md:ml-4 lg:ml-4 overflow-hidden border-y md:border border-cyan-500/20 shadow-[0_0_30px_rgba(6,182,212,0.1)]">
@@ -142,7 +145,8 @@ export default function ArgusDashboard() {
         </main>
         
         {/* RIGHT SIDEBAR - ANALYTICS */}
-        <aside className="w-full md:w-64 lg:w-80 h-[30vh] md:h-auto glass-panel flex flex-col z-10 m-0 md:m-4 md:ml-0 p-4 rounded-none md:rounded-xl border-t md:border-r relative overflow-y-auto">
+        {showRightSidebar && (
+        <aside className="w-full md:w-64 lg:w-80 h-[30vh] md:h-auto glass-panel flex flex-col z-10 m-0 md:m-4 md:ml-0 p-4 rounded-none md:rounded-xl border-t md:border-r relative overflow-y-auto transition-all duration-300 ease-in-out">
           <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-l from-transparent via-primary to-transparent opacity-50" />
           
           <div className="mb-8 shrink-0">
@@ -185,10 +189,12 @@ export default function ArgusDashboard() {
             </div>
           </div>
         </aside>
+        )}
       </div>
 
       {/* BOTTOM TICKER - BLOOMBERG STYLE */}
-      <div className="h-8 w-full bg-black/90 border-t border-cyan-500/30 flex items-center overflow-hidden whitespace-nowrap shrink-0 shadow-[0_-5px_15px_rgba(0,0,0,0.8)] z-50">
+      {showTicker && (
+      <div className="h-8 w-full bg-black/90 border-t border-cyan-500/30 flex items-center overflow-hidden whitespace-nowrap shrink-0 shadow-[0_-5px_15px_rgba(0,0,0,0.8)] z-50 transition-all duration-300 ease-in-out">
         <div className="bg-primary/20 text-primary font-bold px-4 py-1 text-xs uppercase tracking-widest border-r border-cyan-500/50 z-10 shrink-0 h-full flex items-center shadow-[5px_0_10px_rgba(0,0,0,0.5)]">
           ARGUS TICKER
         </div>
@@ -206,6 +212,7 @@ export default function ArgusDashboard() {
           </div>
         </div>
       </div>
+      )}
     </div>
   );
 }

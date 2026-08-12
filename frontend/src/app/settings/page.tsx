@@ -8,7 +8,11 @@ import { useArgusStore } from "@/store/useArgusStore";
 
 export default function SettingsPage() {
   const router = useRouter();
-  const { reduceMotion, localOnlyMode, toggleReduceMotion, toggleLocalOnlyMode } = useArgusStore();
+  const { 
+    reduceMotion, localOnlyMode, toggleReduceMotion, toggleLocalOnlyMode,
+    showLeftSidebar, showRightSidebar, showTicker,
+    toggleLeftSidebar, toggleRightSidebar, toggleTicker, resetUI
+  } = useArgusStore();
   const [interfaces, setInterfaces] = useState<any[]>([]);
   const [selectedInterface, setSelectedInterface] = useState<string>("");
   const [statusMsg, setStatusMsg] = useState("");
@@ -130,6 +134,63 @@ export default function SettingsPage() {
                   className={localOnlyMode ? "bg-destructive text-white font-bold" : "border-cyan-500/30 text-primary"}
                 >
                   {localOnlyMode ? "Enabled" : "Disabled"}
+                </Button>
+              </div>
+            </div>
+          </section>
+
+          {/* Layout Customization */}
+          <section className="p-6 border border-border bg-card/50 rounded-lg mt-8">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-3">
+                <svg xmlns="http://www.w3.org/2000/svg" className="text-primary h-6 w-6" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M3 9h18"/><path d="M9 21V9"/></svg>
+                <h2 className="text-lg font-bold uppercase tracking-wider text-muted-foreground">Layout Customization</h2>
+              </div>
+              <Button onClick={() => { resetUI(); alert("Layout reset to defaults!"); }} variant="outline" className="border-primary/50 text-primary hover:bg-primary/20">
+                Standardwerte laden (Reset UI)
+              </Button>
+            </div>
+            
+            <div className="space-y-6">
+              <div className="flex items-center justify-between p-4 border border-cyan-500/20 bg-black/40 rounded-lg">
+                <div>
+                  <h3 className="font-bold text-primary">Live Feed (Left Sidebar)</h3>
+                  <p className="text-xs text-muted-foreground mt-1">Displays the continuous stream of global signals and logs.</p>
+                </div>
+                <Button 
+                  onClick={toggleLeftSidebar}
+                  variant={showLeftSidebar ? "default" : "outline"} 
+                  className={showLeftSidebar ? "bg-primary text-black font-bold" : "border-cyan-500/30 text-primary"}
+                >
+                  {showLeftSidebar ? "Visible" : "Hidden"}
+                </Button>
+              </div>
+
+              <div className="flex items-center justify-between p-4 border border-cyan-500/20 bg-black/40 rounded-lg">
+                <div>
+                  <h3 className="font-bold text-primary">Analytics & Telemetry (Right Sidebar)</h3>
+                  <p className="text-xs text-muted-foreground mt-1">Displays global sentiment, crypto prices, and internal system metrics.</p>
+                </div>
+                <Button 
+                  onClick={toggleRightSidebar}
+                  variant={showRightSidebar ? "default" : "outline"} 
+                  className={showRightSidebar ? "bg-primary text-black font-bold" : "border-cyan-500/30 text-primary"}
+                >
+                  {showRightSidebar ? "Visible" : "Hidden"}
+                </Button>
+              </div>
+              
+              <div className="flex items-center justify-between p-4 border border-cyan-500/20 bg-black/40 rounded-lg">
+                <div>
+                  <h3 className="font-bold text-primary">Bloomberg Ticker (Bottom Bar)</h3>
+                  <p className="text-xs text-muted-foreground mt-1">Displays the animated marquee ticker at the bottom of the screen.</p>
+                </div>
+                <Button 
+                  onClick={toggleTicker}
+                  variant={showTicker ? "default" : "outline"} 
+                  className={showTicker ? "bg-primary text-black font-bold" : "border-cyan-500/30 text-primary"}
+                >
+                  {showTicker ? "Visible" : "Hidden"}
                 </Button>
               </div>
             </div>
