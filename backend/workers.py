@@ -5,6 +5,7 @@ import feedparser
 import time
 import redis.asyncio as redis
 import os
+import uuid
 
 REDIS_URL = os.getenv("REDIS_URL", "redis://localhost:6379")
 
@@ -12,59 +13,143 @@ REDIS_URL = os.getenv("REDIS_URL", "redis://localhost:6379")
 async def usgs_worker(r: redis.Redis, active_interface: str = ""):
     print("Started USGS Earthquake Worker")
     transport = httpx.AsyncHTTPTransport(local_address=active_interface) if active_interface else httpx.AsyncHTTPTransport()
+    seen_ids = set()
     
     async with httpx.AsyncClient(transport=transport) as client:
         while True:
             try:
-                resp = await client.get("https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_hour.geojson", timeout=10)
+                resp = await client.get("https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_day.geojson", timeout=10)
                 if resp.status_code == 200:
-                    # Parse using ultra-fast orjson
                     data = orjson.loads(resp.content)
-                    events = []
-                    for feature in data.get("features", []):
+                    
+                    # Sort by time so we process oldest first
+                    features = sorted(data.get("features", []), key=lambda x: x["properties"]["time"])
+                    
+                    for feature in features:
+                        if feature["id"] in seen_ids:
+                            continue
+                            
                         mag = feature["properties"]["mag"]
-                        severity = "CRITICAL" if mag >= 6.0 else "HIGH" if mag >= 4.5 else "MEDIUM"
-                        events.append({
+                        if mag is None:
+                            continue
+                            
+                        severity = "CRITICAL" if mag >= 6.0 else "HIGH" if mag >= 4.5 else "MEDIUM" if mag >= 2.5 else "INFO"
+                        
+                        event = {
                             "type": severity,
-                            "title": f"USGS Eq {mag} - {feature['properties']['place']}",
+                            "title": f"M {mag:.1f} - {feature['properties']['place']}",
                             "coordinates": feature["geometry"]["coordinates"][:2],
                             "timestamp": feature["properties"]["time"],
                             "id": feature["id"],
-                            "source": "USGS"
-                        })
-                    
-                    # Push events to Redis PubSub
-                    for event in events:
-                        # Use orjson for blazing fast serialization
+                            "source": "USGS (United States Geological Survey)"
+                        }
+                        
+                        seen_ids.add(feature["id"])
+                        if len(seen_ids) > 10000:
+                            seen_ids.pop() # prevent memory leak
+                            
                         payload = orjson.dumps({"type": "NEW_EVENT", "data": event})
                         await r.publish("argus_live_events", payload)
+                        await asyncio.sleep(0.05) # Throttle to prevent blasting the UI
                         
             except Exception as e:
                 print(f"USGS Worker Error: {e}")
             
-            await asyncio.sleep(60)
+            await asyncio.sleep(300) # Fetch every 5 minutes
 
-async def news_worker(r: redis.Redis, active_interface: str = ""):
-    print("Started Global News Worker")
+async def eonet_worker(r: redis.Redis, active_interface: str = ""):
+    print("Started NASA EONET Worker")
+    transport = httpx.AsyncHTTPTransport(local_address=active_interface) if active_interface else httpx.AsyncHTTPTransport()
+    seen_ids = set()
+    
+    async with httpx.AsyncClient(transport=transport) as client:
+        while True:
+            try:
+                # NASA Earth Observatory Natural Event Tracker
+                resp = await client.get("https://eonet.gsfc.nasa.gov/api/v3/events?status=open&days=7", timeout=15)
+                if resp.status_code == 200:
+                    data = orjson.loads(resp.content)
+                    events = data.get("events", [])
+                    
+                    for e_data in events:
+                        if e_data["id"] in seen_ids:
+                            continue
+                            
+                        geometry = e_data.get("geometry", [])
+                        if not geometry:
+                            continue
+                        
+                        # Get latest coordinate
+                        coord = geometry[-1]["coordinates"]
+                        
+                        category = e_data["categories"][0]["id"] if e_data.get("categories") else "unknown"
+                        severity = "HIGH" if category in ["wildfires", "volcanoes", "severeStorms"] else "MEDIUM"
+                        
+                        event = {
+                            "type": severity,
+                            "title": e_data["title"],
+                            "coordinates": [coord[0], coord[1]],
+                            "timestamp": int(time.time() * 1000),
+                            "id": e_data["id"],
+                            "source": "NASA EONET"
+                        }
+                        
+                        seen_ids.add(e_data["id"])
+                        payload = orjson.dumps({"type": "NEW_EVENT", "data": event})
+                        await r.publish("argus_live_events", payload)
+                        await asyncio.sleep(0.1)
+                        
+            except Exception as e:
+                print(f"NASA Worker Error: {e}")
+                
+            await asyncio.sleep(600) # Fetch every 10 minutes
+
+async def gdacs_worker(r: redis.Redis, active_interface: str = ""):
+    print("Started UN GDACS Worker")
+    seen_ids = set()
+    
     while True:
         try:
-            # Use run_in_executor/to_thread because feedparser is strictly sync and CPU-bound
-            feed = await asyncio.to_thread(feedparser.parse, "http://feeds.bbci.co.uk/news/world/rss.xml")
-            for entry in feed.entries[:3]:
+            # Global Disaster Alert and Coordination System (UN / EU)
+            feed = await asyncio.to_thread(feedparser.parse, "https://www.gdacs.org/xml/rss.xml")
+            
+            for entry in feed.entries:
+                entry_id = entry.id if hasattr(entry, 'id') else entry.link
+                if entry_id in seen_ids:
+                    continue
+                    
+                # Extract coordinates from geo:Point
+                if hasattr(entry, 'geo_lat') and hasattr(entry, 'geo_long'):
+                    lon = float(entry.geo_long)
+                    lat = float(entry.geo_lat)
+                else:
+                    continue # Skip if no coordinates
+                
+                title = entry.title
+                # GDACS uses colors for severity: Red, Orange, Green
+                severity = "CRITICAL" if "Red" in title else "HIGH" if "Orange" in title else "MEDIUM"
+                
+                # Clean up title (remove the color prefix)
+                clean_title = title.split("] ")[-1] if "] " in title else title
+                
                 event = {
-                    "type": "MEDIUM",
-                    "title": entry.title,
-                    "coordinates": [0, 0], 
+                    "type": severity,
+                    "title": clean_title,
+                    "coordinates": [lon, lat],
                     "timestamp": int(time.time() * 1000),
-                    "id": entry.id if hasattr(entry, 'id') else entry.link,
-                    "source": "BBC News"
+                    "id": entry_id,
+                    "source": "UN GDACS"
                 }
+                
+                seen_ids.add(entry_id)
                 payload = orjson.dumps({"type": "NEW_EVENT", "data": event})
                 await r.publish("argus_live_events", payload)
+                await asyncio.sleep(0.1)
+                
         except Exception as e:
-            print(f"News Worker Error: {e}")
+            print(f"GDACS Worker Error: {e}")
             
-        await asyncio.sleep(120)
+        await asyncio.sleep(600)
 
 async def market_worker(r: redis.Redis, active_interface: str = ""):
     print("Started Global Market Worker")
@@ -98,7 +183,8 @@ async def start_workers():
     
     await asyncio.gather(
         usgs_worker(r, active_interface),
-        news_worker(r, active_interface),
+        eonet_worker(r, active_interface),
+        gdacs_worker(r, active_interface),
         market_worker(r, active_interface)
     )
 

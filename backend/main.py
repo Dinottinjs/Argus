@@ -122,10 +122,8 @@ async def startup_event():
     # We use sys.executable to ensure we use the same Python interpreter
     backend_dir = os.path.dirname(os.path.abspath(__file__))
     workers_script = os.path.join(backend_dir, "workers.py")
-    cyber_script = os.path.join(backend_dir, "cyber_worker.py")
     
     app.state.worker_process = subprocess.Popen([sys.executable, workers_script])
-    app.state.cyber_process = subprocess.Popen([sys.executable, cyber_script])
     
     # Start listening to Redis in a background task
     asyncio.create_task(manager.redis_listener())
@@ -134,5 +132,3 @@ async def startup_event():
 async def shutdown_event():
     if hasattr(app.state, "worker_process"):
         app.state.worker_process.terminate()
-    if hasattr(app.state, "cyber_process"):
-        app.state.cyber_process.terminate()

@@ -89,8 +89,10 @@ export default function ArgusDashboard() {
                     <span className="text-[10px] text-primary/50 font-mono">{event.time}</span>
                   </div>
                   <p className="text-white/90 text-xs font-medium leading-relaxed drop-shadow-md">{event.title}</p>
-                  <div className="mt-2 text-[10px] text-primary/40 flex justify-between font-mono">
-                    <span>SRC: {event.source}</span>
+                  <div className="mt-2 text-[10px] text-primary/40 flex justify-between font-mono items-center">
+                    <span className={`px-1 py-0.5 rounded-sm ${event.source.includes('NASA') ? 'bg-blue-900/40 text-blue-400 border border-blue-500/30' : event.source.includes('UN') ? 'bg-indigo-900/40 text-indigo-400 border border-indigo-500/30' : 'bg-slate-800/40'}`}>
+                      SRC: {event.source}
+                    </span>
                     <span>ID: {event.id.substring(0,8)}</span>
                   </div>
                 </div>
