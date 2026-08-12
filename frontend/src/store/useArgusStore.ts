@@ -14,9 +14,7 @@ interface ArgusStore {
   events: ArgusEvent[];
   binaryPositions: Float32Array | null;
   status: string;
-  stats: {
-    btc_price: number;
-    eth_price: number;
+  stats: any;
   worker: Worker | null;
   showHeatmap: boolean;
   showScatterplot: boolean;
