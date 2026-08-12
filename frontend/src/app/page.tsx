@@ -20,11 +20,25 @@ export default function ArgusDashboard() {
     isPaused, reduceMotion,
     showLeftSidebar, showRightSidebar, showTicker,
     mapStyle,
+    selectedCountry, setSelectedCountry, flyTo,
     toggleHeatmap, toggleScatterplot, 
     togglePause, clearEvents,
     toggleMapStyle,
     initWorker 
   } = useArgusStore();
+
+  const [activeTab, setActiveTab] = React.useState('ALL');
+
+  const filteredEvents = React.useMemo(() => {
+    return events.filter(e => {
+      // Very basic country filtering: check if country name is in title
+      if (selectedCountry && !e.title.toLowerCase().includes(selectedCountry.toLowerCase())) return false;
+      
+      if (activeTab === 'CONFLICTS') return e.source.includes('OCHA');
+      if (activeTab === 'DISASTERS') return e.source.includes('GDACS') || e.source.includes('NASA') || e.source.includes('USGS');
+      return true;
+    });
+  }, [events, selectedCountry, activeTab]);
 
   useEffect(() => {
     initWorker();
@@ -71,19 +85,35 @@ export default function ArgusDashboard() {
         {/* LEFT SIDEBAR - TICKER */}
         {showLeftSidebar && (
         <aside className="w-full md:w-64 lg:w-80 h-[30vh] md:h-auto glass-panel flex flex-col z-10 m-0 md:m-4 md:mr-0 rounded-none md:rounded-xl border-t md:border-l transition-all duration-300 ease-in-out">
-          <div className="p-4 border-b border-cyan-500/20 flex items-center gap-2 bg-black/20 md:rounded-t-xl relative overflow-hidden">
+          <div className="p-4 border-b border-cyan-500/20 flex flex-col gap-3 bg-black/40 md:rounded-t-xl relative overflow-hidden backdrop-blur-md">
             <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-primary to-transparent opacity-50" />
-            <Activity className="h-4 w-4 text-primary animate-pulse-glow" />
-            <h2 className="text-sm font-semibold uppercase tracking-wider text-primary neon-text">Live Feed</h2>
+            <div className="flex items-center gap-2">
+              <Activity className="h-4 w-4 text-primary animate-pulse-glow" />
+              <h2 className="text-sm font-semibold uppercase tracking-wider text-primary neon-text">
+                {selectedCountry ? `Data: ${selectedCountry}` : 'Global Live Feed'}
+              </h2>
+              {selectedCountry && (
+                <button onClick={() => setSelectedCountry(null)} className="ml-auto text-xs text-destructive hover:text-red-400">Clear Filter</button>
+              )}
+            </div>
+            <div className="flex gap-2">
+              <button onClick={() => setActiveTab('ALL')} className={`text-[10px] px-2 py-1 rounded border font-mono transition-all ${activeTab === 'ALL' ? 'bg-primary/20 border-primary text-primary shadow-[0_0_10px_rgba(6,182,212,0.5)]' : 'border-transparent text-primary/50 hover:text-primary/80'}`}>ALL</button>
+              <button onClick={() => setActiveTab('CONFLICTS')} className={`text-[10px] px-2 py-1 rounded border font-mono transition-all ${activeTab === 'CONFLICTS' ? 'bg-destructive/20 border-destructive text-destructive shadow-[0_0_10px_rgba(255,0,0,0.5)]' : 'border-transparent text-destructive/50 hover:text-destructive/80'}`}>CONFLICTS</button>
+              <button onClick={() => setActiveTab('DISASTERS')} className={`text-[10px] px-2 py-1 rounded border font-mono transition-all ${activeTab === 'DISASTERS' ? 'bg-orange-500/20 border-orange-500 text-orange-400 shadow-[0_0_10px_rgba(255,165,0,0.5)]' : 'border-transparent text-orange-500/50 hover:text-orange-400/80'}`}>DISASTERS</button>
+            </div>
           </div>
           <div className="flex-1 overflow-y-auto overflow-x-hidden p-4 space-y-3 custom-scrollbar relative z-10">
-            {events.length === 0 ? (
-              <div className="h-full flex items-center justify-center text-xs text-primary/50 font-mono animate-pulse">
-                Waiting for live signals...
+            {filteredEvents.length === 0 ? (
+              <div className="h-full flex flex-col items-center justify-center text-xs text-primary/50 font-mono">
+                {events.length === 0 ? <span className="animate-pulse">Awaiting satellite uplinks...</span> : <span>No events for this filter.</span>}
               </div>
             ) : (
-              events.map((event, i) => (
-                <div key={event.id} className={`glass-panel-hover p-3 rounded-lg border-l-2 text-sm shadow-[0_0_15px_rgba(0,0,0,0.5)] transform transition-all ${!reduceMotion ? 'hover:scale-105 hover:-translate-y-1' : ''} ${i === 0 && !reduceMotion ? 'animate-slide-down neon-pulse-new' : ''} ${event.type === 'CRITICAL' ? 'border-destructive' : event.type === 'HIGH' ? 'border-orange-500' : 'border-primary'}`}>
+              filteredEvents.map((event, i) => (
+                <div 
+                  key={event.id} 
+                  onClick={() => flyTo(event.coordinates[0], event.coordinates[1], 6)}
+                  className={`glass-panel-hover p-3 rounded-lg border-l-2 text-sm shadow-[0_0_15px_rgba(0,0,0,0.5)] transform transition-all cursor-pointer ${!reduceMotion ? 'hover:scale-[1.02] hover:-translate-y-1' : ''} ${i === 0 && !reduceMotion ? 'animate-slide-down neon-pulse-new' : ''} ${event.type === 'CRITICAL' ? 'border-destructive' : event.type === 'HIGH' ? 'border-orange-500' : 'border-primary'}`}
+                >
                   <div className="flex justify-between items-start mb-2">
                     <span className={`text-xs font-bold font-mono tracking-widest ${event.type === 'CRITICAL' ? 'text-destructive drop-shadow-[0_0_5px_rgba(255,0,0,0.8)]' : event.type === 'HIGH' ? 'text-orange-500' : 'text-primary'}`}>
                       {event.type}

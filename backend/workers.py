@@ -50,7 +50,6 @@ async def usgs_worker(r: redis.Redis, active_interface: str = ""):
                             
                         payload = orjson.dumps({"type": "NEW_EVENT", "data": event})
                         await r.publish("argus_live_events", payload)
-                        await asyncio.sleep(0.05) # Throttle to prevent blasting the UI
                         
             except Exception as e:
                 print(f"USGS Worker Error: {e}")
@@ -97,7 +96,6 @@ async def eonet_worker(r: redis.Redis, active_interface: str = ""):
                         seen_ids.add(e_data["id"])
                         payload = orjson.dumps({"type": "NEW_EVENT", "data": event})
                         await r.publish("argus_live_events", payload)
-                        await asyncio.sleep(0.1)
                         
             except Exception as e:
                 print(f"NASA Worker Error: {e}")
@@ -144,7 +142,6 @@ async def gdacs_worker(r: redis.Redis, active_interface: str = ""):
                 seen_ids.add(entry_id)
                 payload = orjson.dumps({"type": "NEW_EVENT", "data": event})
                 await r.publish("argus_live_events", payload)
-                await asyncio.sleep(0.1)
                 
         except Exception as e:
             print(f"GDACS Worker Error: {e}")
@@ -159,8 +156,8 @@ async def conflict_worker(r: redis.Redis, active_interface: str = ""):
     async with httpx.AsyncClient(transport=transport) as client:
         while True:
             try:
-                # ReliefWeb API for active conflicts / complex emergencies
-                resp = await client.get("https://api.reliefweb.int/v1/disasters?appname=argus&profile=full&preset=latest&limit=50&query[value]=type:%22Complex%20Emergency%22", timeout=15)
+                # ReliefWeb API for active conflicts (Complex Emergencies) & Epidemics
+                resp = await client.get("https://api.reliefweb.int/v1/disasters?appname=argus&profile=full&preset=latest&limit=50&query[value]=type:(%22Complex%20Emergency%22%20OR%20%22Epidemic%22)", timeout=15)
                 if resp.status_code == 200:
                     data = orjson.loads(resp.content)
                     
@@ -189,7 +186,6 @@ async def conflict_worker(r: redis.Redis, active_interface: str = ""):
                         seen_ids.add(conflict_id)
                         payload = orjson.dumps({"type": "NEW_EVENT", "data": event})
                         await r.publish("argus_live_events", payload)
-                        await asyncio.sleep(0.1)
                         
             except Exception as e:
                 print(f"Conflict Worker Error: {e}")

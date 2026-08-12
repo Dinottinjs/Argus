@@ -25,6 +25,19 @@ interface ArgusStore {
   showRightSidebar: boolean;
   showTicker: boolean;
   mapStyle: 'dark' | 'satellite';
+  selectedCountry: string | null;
+  viewState: {
+    longitude: number;
+    latitude: number;
+    zoom: number;
+    pitch: number;
+    bearing: number;
+    transitionDuration?: number;
+    transitionInterpolator?: any;
+  };
+  setViewState: (viewState: any) => void;
+  flyTo: (longitude: number, latitude: number, zoom?: number) => void;
+  setSelectedCountry: (country: string | null) => void;
   initWorker: () => void;
   toggleHeatmap: () => void;
   toggleScatterplot: () => void;
@@ -56,6 +69,30 @@ export const useArgusStore = create<ArgusStore>()(
   showRightSidebar: true,
   showTicker: true,
   mapStyle: 'dark',
+  selectedCountry: null,
+  viewState: {
+    longitude: 10,
+    latitude: 30,
+    zoom: 2.0,
+    pitch: 45,
+    bearing: 0
+  },
+  
+  setViewState: (viewState) => set({ viewState }),
+  flyTo: (longitude, latitude, zoom = 4) => {
+    // Requires importing FlyToInterpolator where it's used, but we can pass a dummy string to be parsed or use MapGL's native flyTo if we use react-map-gl
+    set((state) => ({
+      viewState: {
+        ...state.viewState,
+        longitude,
+        latitude,
+        zoom,
+        transitionDuration: 2000,
+        // We will handle the interpolator in Map.tsx
+      }
+    }));
+  },
+  setSelectedCountry: (country) => set({ selectedCountry: country }),
   
   toggleHeatmap: () => set((state) => ({ showHeatmap: !state.showHeatmap })),
   toggleScatterplot: () => set((state) => ({ showScatterplot: !state.showScatterplot })),

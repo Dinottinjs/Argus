@@ -1,19 +1,14 @@
 "use client";
 import React from 'react';
 import DeckGL from '@deck.gl/react';
-import { ScatterplotLayer } from '@deck.gl/layers';
+import { ScatterplotLayer, GeoJsonLayer } from '@deck.gl/layers';
 import { HeatmapLayer } from '@deck.gl/aggregation-layers';
 import { Map as MapGL } from 'react-map-gl/maplibre';
+import { FlyToInterpolator } from '@deck.gl/core';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import { useArgusStore } from '@/store/useArgusStore';
 
-const INITIAL_VIEW_STATE = {
-  longitude: 10,
-  latitude: 30,
-  zoom: 2.0,
-  pitch: 45,
-  bearing: 0
-};
+// Removed INITIAL_VIEW_STATE as we now use controlled viewState from store
 
 const CARTO_DARK_MATTER = {
   version: 8,
@@ -65,10 +60,46 @@ const ESRI_SATELLITE = {
 };
 
 export default function GlobalMap() {
-  const { events, binaryPositions, showHeatmap, showScatterplot, mapStyle } = useArgusStore();
+  const { 
+    events, binaryPositions, showHeatmap, showScatterplot, mapStyle,
+    viewState, setViewState, setSelectedCountry, selectedCountry
+  } = useArgusStore();
+  
+  // Convert zustand viewState (which has transitionDuration) into deck.gl props
+  const deckViewState = React.useMemo(() => {
+    if (viewState.transitionDuration) {
+      return {
+        ...viewState,
+        transitionInterpolator: new FlyToInterpolator()
+      };
+    }
+    return viewState;
+  }, [viewState]);
 
   const layers = React.useMemo(() => {
     const activeLayers = [];
+    
+    // Country Polygons
+    activeLayers.push(
+      new GeoJsonLayer({
+        id: 'countries-layer',
+        data: 'https://d2ad6b4ur7yvpq.cloudfront.net/naturalearth-3.3.0/ne_50m_admin_0_countries.geojson',
+        stroked: true,
+        filled: true,
+        lineWidthMinPixels: 1,
+        getLineColor: [6, 182, 212, 100], // Cyan outlines
+        getFillColor: (d: any) => d.properties.admin === selectedCountry ? [6, 182, 212, 50] : [0, 0, 0, 0],
+        pickable: true,
+        onClick: (info: any) => {
+          if (info.object && info.object.properties) {
+            setSelectedCountry(info.object.properties.admin === selectedCountry ? null : info.object.properties.admin);
+          }
+        },
+        updateTriggers: {
+          getFillColor: [selectedCountry]
+        }
+      })
+    );
     
     if (showScatterplot) {
       activeLayers.push(
@@ -101,14 +132,19 @@ export default function GlobalMap() {
     }
     
     return activeLayers;
-  }, [events, binaryPositions, showHeatmap, showScatterplot]);
+  }, [events, binaryPositions, showHeatmap, showScatterplot, selectedCountry]);
   return (
     <div className="relative w-full h-full">
       <DeckGL
-        initialViewState={INITIAL_VIEW_STATE}
+        viewState={deckViewState}
+        onViewStateChange={({viewState}) => setViewState(viewState)}
         controller={true}
         layers={layers}
-        getTooltip={({object}: any) => object && `${object.title}\nSource: ${object.source}`}
+        getTooltip={({object}: any) => {
+          if (!object) return null;
+          if (object.properties && object.properties.admin) return object.properties.admin;
+          return `${object.title}\nSource: ${object.source}`;
+        }}
       >
         <MapGL
           mapStyle={mapStyle === 'satellite' ? (ESRI_SATELLITE as any) : (CARTO_DARK_MATTER as any)}
