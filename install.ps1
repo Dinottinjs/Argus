@@ -64,10 +64,47 @@ function Invoke-FastDownload {
     Write-Host "`r    [████████████████████████████████████████] 100% (Download abgeschlossen)                    `n" -ForegroundColor Green
 }
 
+function Show-StepProgress {
+    param (
+        [string]$Title,
+        [int]$Seconds
+    )
+    Write-Host "[*] $Title..." -ForegroundColor Cyan
+    $totalSteps = $Seconds * 10
+    for ($i = 1; $i -le $totalSteps; $i++) {
+        Start-Sleep -Milliseconds 100
+        $percent = [math]::Floor(($i / $totalSteps) * 100)
+        
+        $barLength = 40
+        $filled = [math]::Floor(($percent / 100) * $barLength)
+        $empty = $barLength - $filled
+        
+        $bar = ("█" * $filled) + ("░" * $empty)
+        Write-Host "`r    [$bar] $percent%" -NoNewline -ForegroundColor Cyan
+    }
+    Write-Host "`r    [████████████████████████████████████████] 100% (Abgeschlossen)                    `n" -ForegroundColor Green
+}
+
+$ShortcutPath = "$env:USERPROFILE\Desktop\Argus Command Center.lnk"
+$isUpdate = Test-Path $ShortcutPath
+
 Write-Host "=======================================================" -ForegroundColor Cyan
-Write-Host "         ARGUS COMMAND CENTER - AUTONOMOUS SETUP" -ForegroundColor Cyan
+if ($isUpdate) {
+    Write-Host "         ARGUS COMMAND CENTER - UPDATE MODE" -ForegroundColor Yellow
+} else {
+    Write-Host "         ARGUS COMMAND CENTER - AUTONOMOUS SETUP" -ForegroundColor Cyan
+}
 Write-Host "=======================================================" -ForegroundColor Cyan
 Write-Host "Initialisiere..." -ForegroundColor Gray
+
+if ($isUpdate) {
+    Write-Host "`n[*] Beende alte Hintergrundprozesse (Companion App)..." -ForegroundColor Yellow
+    # WMI check to kill pythonw.exe only if it's running argus_tray.py
+    Get-WmiObject Win32_Process | Where-Object { $_.Name -match 'pythonw.exe' -and $_.CommandLine -match 'argus_tray.py' } | ForEach-Object {
+        Stop-Process -Id $_.ProcessId -Force -ErrorAction SilentlyContinue
+    }
+    Start-Sleep -Seconds 1
+}
 
 # 1. Python Check & Install
 Write-Host "`n[*] Pruefe Python Installation..." -ForegroundColor Cyan
@@ -147,9 +184,9 @@ try {
 }
 
 # 4. Auto-Update & Repair
-Write-Host "`n[*] Pruefe auf Updates und repariere System (Git Pull)..." -ForegroundColor Cyan
 Set-Location $PSScriptRoot
 try {
+    Show-StepProgress -Title "Pruefe auf Updates und repariere System (Git Pull)" -Seconds 3
     & git fetch origin main 2>&1 | Out-Null
     & git pull origin main 2>&1 | Out-Null
     Write-Host "[+] Argus ist auf dem neuesten Stand!" -ForegroundColor Green
@@ -158,7 +195,7 @@ try {
 }
 
 # 5. Argus Setup (Docker Compose)
-Write-Host "`n[*] Baue und Starte Argus Container System..." -ForegroundColor Cyan
+Show-StepProgress -Title "Baue und Starte Argus Container System" -Seconds 5
 & docker compose up --build -d
 
 # 5. Companion App
@@ -167,21 +204,26 @@ Write-Host "`n[*] Richte Windows Taskleisten-Companion ein..." -ForegroundColor 
 Start-Process -FilePath "pythonw" -ArgumentList "argus_tray.py"
 
 # 6. Shortcut & Native App
-Write-Host "`n[*] Erstelle Desktop Shortcut..." -ForegroundColor Cyan
-try {
-    $WshShell = New-Object -comObject WScript.Shell
-    $ShortcutPath = "$env:USERPROFILE\Desktop\Argus Command Center.lnk"
-    $Shortcut = $WshShell.CreateShortcut($ShortcutPath)
-    $Shortcut.TargetPath = "C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe"
-    $Shortcut.Arguments = "--app=http://localhost:3000"
-    $Shortcut.IconLocation = "$PSScriptRoot\public\logo.png"
-    $Shortcut.Save()
-} catch {
-    Write-Host "[!] Konnte Shortcut nicht erstellen." -ForegroundColor Yellow
+if (-not $isUpdate) {
+    Write-Host "`n[*] Erstelle Desktop Shortcut..." -ForegroundColor Cyan
+    try {
+        $WshShell = New-Object -comObject WScript.Shell
+        $Shortcut = $WshShell.CreateShortcut($ShortcutPath)
+        $Shortcut.TargetPath = "C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe"
+        $Shortcut.Arguments = "--app=http://localhost:3000"
+        $Shortcut.IconLocation = "$PSScriptRoot\public\logo.png"
+        $Shortcut.Save()
+    } catch {
+        Write-Host "[!] Konnte Shortcut nicht erstellen." -ForegroundColor Yellow
+    }
 }
 
 Write-Host "`n=======================================================" -ForegroundColor Cyan
-Write-Host "         INSTALLATION ERFOLGREICH ABGESCHLOSSEN" -ForegroundColor Green
+if ($isUpdate) {
+    Write-Host "         UPDATE ERFOLGREICH ABGESCHLOSSEN" -ForegroundColor Green
+} else {
+    Write-Host "         INSTALLATION ERFOLGREICH ABGESCHLOSSEN" -ForegroundColor Green
+}
 Write-Host "=======================================================" -ForegroundColor Cyan
 Write-Host "[+] Die Argus Companion App laeuft nun in der Taskleiste." -ForegroundColor Gray
 Write-Host "[+] Argus Command Center startet als native App..." -ForegroundColor Gray
