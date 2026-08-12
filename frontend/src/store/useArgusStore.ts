@@ -16,14 +16,19 @@ interface ArgusStore {
   stats: {
     btc_price: number;
     eth_price: number;
-    sentiment: number;
-  } | null;
   worker: Worker | null;
   showHeatmap: boolean;
   showScatterplot: boolean;
+  isPaused: boolean;
+  reduceMotion: boolean;
+  localOnlyMode: boolean;
   initWorker: () => void;
   toggleHeatmap: () => void;
   toggleScatterplot: () => void;
+  togglePause: () => void;
+  toggleReduceMotion: () => void;
+  toggleLocalOnlyMode: () => void;
+  clearEvents: () => void;
 }
 
 export const useArgusStore = create<ArgusStore>((set, get) => ({
@@ -34,9 +39,16 @@ export const useArgusStore = create<ArgusStore>((set, get) => ({
   worker: null,
   showHeatmap: true,
   showScatterplot: true,
+  isPaused: false,
+  reduceMotion: false,
+  localOnlyMode: false,
   
   toggleHeatmap: () => set((state) => ({ showHeatmap: !state.showHeatmap })),
   toggleScatterplot: () => set((state) => ({ showScatterplot: !state.showScatterplot })),
+  togglePause: () => set((state) => ({ isPaused: !state.isPaused })),
+  toggleReduceMotion: () => set((state) => ({ reduceMotion: !state.reduceMotion })),
+  toggleLocalOnlyMode: () => set((state) => ({ localOnlyMode: !state.localOnlyMode })),
+  clearEvents: () => set({ events: [], binaryPositions: null }),
   
   initWorker: () => {
     if (get().worker) return; // already initialized
@@ -54,8 +66,15 @@ export const useArgusStore = create<ArgusStore>((set, get) => ({
             set({ stats });
         } else if (type === 'BATCH_EVENTS') {
             set((state) => {
+                if (state.isPaused) return state; // Do not accept new events if paused
+                
+                let incomingEvents = events;
+                if (state.localOnlyMode) {
+                   incomingEvents = incomingEvents.filter((e: any) => e.source !== 'USGS' && e.source !== 'BBC News' && e.source !== 'Binance');
+                }
+                
                 // Merge old events with new batch
-                const merged = [...events, ...state.events].slice(0, 100); // UI holds up to 100 in memory (Memory Leak Fix)
+                const merged = [...incomingEvents, ...state.events].slice(0, 100); // UI holds up to 100 in memory (Memory Leak Fix)
                 
                 // Also merge binary positions for DeckGL
                 let newPositions = binaryData.positions;

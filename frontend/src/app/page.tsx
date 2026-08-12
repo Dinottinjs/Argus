@@ -14,7 +14,14 @@ const GlobalMap = dynamic(() => import("@/components/Map"), {
 });
 
 export default function ArgusDashboard() {
-  const { events, status, stats, showHeatmap, showScatterplot, toggleHeatmap, toggleScatterplot, initWorker } = useArgusStore();
+  const { 
+    events, status, stats, 
+    showHeatmap, showScatterplot, 
+    isPaused, reduceMotion,
+    toggleHeatmap, toggleScatterplot, 
+    togglePause, clearEvents,
+    initWorker 
+  } = useArgusStore();
 
   useEffect(() => {
     initWorker();
@@ -72,7 +79,7 @@ export default function ArgusDashboard() {
               </div>
             ) : (
               events.map((event, i) => (
-                <div key={event.id} className={`glass-panel-hover p-3 rounded-lg border-l-2 text-sm shadow-[0_0_15px_rgba(0,0,0,0.5)] transform transition-all hover:scale-105 hover:-translate-y-1 ${i === 0 ? 'animate-slide-down neon-pulse-new' : ''} ${event.type === 'CRITICAL' ? 'border-destructive' : event.type === 'HIGH' ? 'border-orange-500' : 'border-primary'}`}>
+                <div key={event.id} className={`glass-panel-hover p-3 rounded-lg border-l-2 text-sm shadow-[0_0_15px_rgba(0,0,0,0.5)] transform transition-all ${!reduceMotion ? 'hover:scale-105 hover:-translate-y-1' : ''} ${i === 0 && !reduceMotion ? 'animate-slide-down neon-pulse-new' : ''} ${event.type === 'CRITICAL' ? 'border-destructive' : event.type === 'HIGH' ? 'border-orange-500' : 'border-primary'}`}>
                   <div className="flex justify-between items-start mb-2">
                     <span className={`text-xs font-bold font-mono tracking-widest ${event.type === 'CRITICAL' ? 'text-destructive drop-shadow-[0_0_5px_rgba(255,0,0,0.8)]' : event.type === 'HIGH' ? 'text-orange-500' : 'text-primary'}`}>
                       {event.type}
@@ -111,6 +118,25 @@ export default function ArgusDashboard() {
               className={`glass-panel-hover transition-all ${showHeatmap ? 'bg-orange-500/20 text-orange-400 border-orange-500 shadow-[0_0_15px_rgba(249,115,22,0.4)]' : 'bg-black/60 text-slate-400 border-cyan-500/30'}`}
             >
               <AlertTriangle className="h-4 w-4 mr-2" /> Heatmap
+            </Button>
+          </div>
+          
+          <div className="absolute top-6 right-6 z-20 flex flex-col gap-2">
+            <Button 
+              variant="secondary" 
+              size="sm" 
+              onClick={togglePause}
+              className={`glass-panel-hover transition-all ${isPaused ? 'bg-yellow-500/20 text-yellow-500 border-yellow-500 shadow-[0_0_15px_rgba(234,179,8,0.4)]' : 'bg-black/60 text-slate-400 border-cyan-500/30'}`}
+            >
+              <ShieldAlert className="h-4 w-4 mr-2" /> {isPaused ? 'Resume Feed' : 'Pause Feed'}
+            </Button>
+            <Button 
+              variant="secondary" 
+              size="sm" 
+              onClick={clearEvents}
+              className="glass-panel-hover bg-black/60 text-red-400 border-red-500/50 hover:bg-red-500/20 transition-all"
+            >
+              <Search className="h-4 w-4 mr-2" /> Clear Data
             </Button>
           </div>
         </main>
@@ -167,7 +193,7 @@ export default function ArgusDashboard() {
           ARGUS TICKER
         </div>
         <div className="flex-1 overflow-hidden relative">
-          <div className="animate-marquee flex items-center gap-8 pl-4">
+          <div className={`${!reduceMotion ? 'animate-marquee' : ''} flex items-center gap-8 pl-4 h-full`}>
             <span className="text-green-400 font-mono text-xs font-bold">BTC/USDT ${stats?.btc_price?.toLocaleString() || "---"} ▲</span>
             <span className="text-green-400 font-mono text-xs font-bold">ETH/USDT ${stats?.eth_price?.toLocaleString() || "---"} ▲</span>
             <span className="text-primary/50 font-mono text-xs">|</span>

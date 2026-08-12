@@ -166,13 +166,15 @@ Write-Host "`n[*] Richte Windows Taskleisten-Companion ein..." -ForegroundColor 
 & python -m pip install pystray Pillow psutil requests --quiet
 Start-Process -FilePath "pythonw" -ArgumentList "argus_tray.py"
 
-# 6. Shortcut
+# 6. Shortcut & Native App
 Write-Host "`n[*] Erstelle Desktop Shortcut..." -ForegroundColor Cyan
 try {
     $WshShell = New-Object -comObject WScript.Shell
-    $ShortcutPath = "$env:USERPROFILE\Desktop\Argus Dashboard.url"
+    $ShortcutPath = "$env:USERPROFILE\Desktop\Argus Command Center.lnk"
     $Shortcut = $WshShell.CreateShortcut($ShortcutPath)
-    $Shortcut.TargetPath = "http://localhost:3000"
+    $Shortcut.TargetPath = "C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe"
+    $Shortcut.Arguments = "--app=http://localhost:3000"
+    $Shortcut.IconLocation = "$PSScriptRoot\public\logo.png"
     $Shortcut.Save()
 } catch {
     Write-Host "[!] Konnte Shortcut nicht erstellen." -ForegroundColor Yellow
@@ -182,10 +184,10 @@ Write-Host "`n=======================================================" -Foregrou
 Write-Host "         INSTALLATION ERFOLGREICH ABGESCHLOSSEN" -ForegroundColor Green
 Write-Host "=======================================================" -ForegroundColor Cyan
 Write-Host "[+] Die Argus Companion App laeuft nun in der Taskleiste." -ForegroundColor Gray
-Write-Host "[+] Das Dashboard oeffnet sich in Kuerze..." -ForegroundColor Gray
+Write-Host "[+] Argus Command Center startet als native App..." -ForegroundColor Gray
 
 Start-Sleep -Seconds 3
-Start-Process "http://localhost:3000"
+Start-Process "C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe" -ArgumentList "--app=http://localhost:3000"
 
 Write-Host "`nDruecke eine beliebige Taste zum Beenden..." -ForegroundColor Cyan
 $null = $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")

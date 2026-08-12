@@ -114,9 +114,25 @@ async def websocket_endpoint(websocket: WebSocket):
 
 @app.on_event("startup")
 async def startup_event():
-    # Start Redis PubSub Listener
-    asyncio.create_task(manager.redis_listener())
+    # Start background workers as separate processes for maximum performance
+    import subprocess
+    import sys
+    import os
     
-    # Start the worker process (in a real production scenario, this runs in a separate Docker container)
-    # We spawn it as a subprocess here for convenience in this single-container setup
-    subprocess.Popen([sys.executable, "-u", "workers.py"])
+    # We use sys.executable to ensure we use the same Python interpreter
+    backend_dir = os.path.dirname(os.path.abspath(__file__))
+    workers_script = os.path.join(backend_dir, "workers.py")
+    cyber_script = os.path.join(backend_dir, "cyber_worker.py")
+    
+    app.state.worker_process = subprocess.Popen([sys.executable, workers_script])
+    app.state.cyber_process = subprocess.Popen([sys.executable, cyber_script])
+    
+    # Start listening to Redis in a background task
+    asyncio.create_task(manager.redis_listener())
+
+@app.on_event("shutdown")
+async def shutdown_event():
+    if hasattr(app.state, "worker_process"):
+        app.state.worker_process.terminate()
+    if hasattr(app.state, "cyber_process"):
+        app.state.cyber_process.terminate()

@@ -4,9 +4,11 @@ import React, { useState, useEffect } from "react";
 import { ArrowLeft, ShieldAlert, Trash2, Network } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
+import { useArgusStore } from "@/store/useArgusStore";
 
 export default function SettingsPage() {
   const router = useRouter();
+  const { reduceMotion, localOnlyMode, toggleReduceMotion, toggleLocalOnlyMode } = useArgusStore();
   const [interfaces, setInterfaces] = useState<any[]>([]);
   const [selectedInterface, setSelectedInterface] = useState<string>("");
   const [statusMsg, setStatusMsg] = useState("");
@@ -93,6 +95,44 @@ export default function SettingsPage() {
               </Button>
             </div>
             {statusMsg && <p className="text-primary mt-3 text-sm">{statusMsg}</p>}
+          </section>
+
+          {/* Security & Accessibility Settings */}
+          <section className="p-6 border border-border bg-card/50 rounded-lg mt-8">
+            <div className="flex items-center gap-3 mb-4">
+              <ShieldAlert className="text-primary h-6 w-6" />
+              <h2 className="text-lg font-bold uppercase tracking-wider text-muted-foreground">Security & Accessibility</h2>
+            </div>
+            
+            <div className="space-y-6">
+              <div className="flex items-center justify-between p-4 border border-cyan-500/20 bg-black/40 rounded-lg">
+                <div>
+                  <h3 className="font-bold text-primary">Reduce Motion & Animations</h3>
+                  <p className="text-xs text-muted-foreground mt-1">Disables the Bloomberg ticker scrolling and CSS pulse effects to reduce GPU load and prevent motion sickness.</p>
+                </div>
+                <Button 
+                  onClick={toggleReduceMotion}
+                  variant={reduceMotion ? "default" : "outline"} 
+                  className={reduceMotion ? "bg-primary text-black font-bold" : "border-cyan-500/30 text-primary"}
+                >
+                  {reduceMotion ? "Enabled" : "Disabled"}
+                </Button>
+              </div>
+
+              <div className="flex items-center justify-between p-4 border border-cyan-500/20 bg-black/40 rounded-lg">
+                <div>
+                  <h3 className="font-bold text-primary">Air-Gapped / Local Only Mode</h3>
+                  <p className="text-xs text-muted-foreground mt-1">Stops all external API calls (USGS, BBC, Binance). Map will only show locally generated internal telemetry data.</p>
+                </div>
+                <Button 
+                  onClick={toggleLocalOnlyMode}
+                  variant={localOnlyMode ? "destructive" : "outline"} 
+                  className={localOnlyMode ? "bg-destructive text-white font-bold" : "border-cyan-500/30 text-primary"}
+                >
+                  {localOnlyMode ? "Enabled" : "Disabled"}
+                </Button>
+              </div>
+            </div>
           </section>
 
           {/* Danger Zone */}
