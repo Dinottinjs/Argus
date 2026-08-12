@@ -41,8 +41,31 @@ const CARTO_DARK_MATTER = {
   ]
 };
 
+const ESRI_SATELLITE = {
+  version: 8,
+  sources: {
+    'esri-satellite': {
+      type: 'raster',
+      tiles: [
+        'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'
+      ],
+      tileSize: 256,
+      attribution: '© Esri, Maxar, Earthstar Geographics, USDA FSA, USGS, Aerogrid, IGN, IGP, and the GIS User Community'
+    }
+  },
+  layers: [
+    {
+      id: 'esri-satellite-layer',
+      type: 'raster',
+      source: 'esri-satellite',
+      minzoom: 0,
+      maxzoom: 22
+    }
+  ]
+};
+
 export default function GlobalMap() {
-  const { events, binaryPositions, showHeatmap, showScatterplot } = useArgusStore();
+  const { events, binaryPositions, showHeatmap, showScatterplot, mapStyle } = useArgusStore();
 
   const layers = React.useMemo(() => {
     const activeLayers = [];
@@ -88,7 +111,8 @@ export default function GlobalMap() {
         getTooltip={({object}: any) => object && `${object.title}\nSource: ${object.source}`}
       >
         <MapGL
-          mapStyle={CARTO_DARK_MATTER as any}
+          mapStyle={mapStyle === 'satellite' ? (ESRI_SATELLITE as any) : (CARTO_DARK_MATTER as any)}
+          renderWorldCopies={false}
         />
       </DeckGL>
     </div>

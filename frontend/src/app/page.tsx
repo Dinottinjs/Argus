@@ -19,8 +19,10 @@ export default function ArgusDashboard() {
     showHeatmap, showScatterplot, 
     isPaused, reduceMotion,
     showLeftSidebar, showRightSidebar, showTicker,
+    mapStyle,
     toggleHeatmap, toggleScatterplot, 
     togglePause, clearEvents,
+    toggleMapStyle,
     initWorker 
   } = useArgusStore();
 
@@ -111,6 +113,14 @@ export default function ArgusDashboard() {
             <Button 
               variant="secondary" 
               size="sm" 
+              onClick={toggleMapStyle}
+              className={`glass-panel-hover transition-all bg-black/60 text-slate-200 border-cyan-500/50 shadow-[0_0_15px_rgba(255,255,255,0.1)]`}
+            >
+              <Globe2 className="h-4 w-4 mr-2" /> {mapStyle === 'dark' ? 'Satellite View' : 'Dark Mode'}
+            </Button>
+            <Button 
+              variant="secondary" 
+              size="sm" 
               onClick={toggleScatterplot}
               className={`glass-panel-hover transition-all ${showScatterplot ? 'bg-primary/20 text-primary border-primary shadow-[0_0_15px_rgba(6,182,212,0.4)]' : 'bg-black/60 text-slate-400 border-cyan-500/30'}`}
             >
@@ -164,15 +174,15 @@ export default function ArgusDashboard() {
           </div>
           
           <div className="mb-6 shrink-0">
-            <h2 className="text-sm font-semibold uppercase tracking-wider text-primary neon-text mb-4">Live Markets (Binance)</h2>
+            <h2 className="text-sm font-semibold uppercase tracking-wider text-primary neon-text mb-4">Global Security</h2>
             <div className="space-y-3">
               <div className="glass-panel-hover p-3 rounded-lg flex justify-between items-center border border-cyan-500/10">
-                <span className="font-mono text-primary/70 text-xs">BTC/USDT</span>
-                <span className="font-mono text-white text-sm font-bold shadow-[0_0_10px_rgba(255,255,255,0.2)]">${stats?.btc_price?.toLocaleString() || "---"}</span>
+                <span className="font-mono text-primary/70 text-xs flex items-center"><ShieldAlert className="h-3 w-3 mr-2 text-destructive"/> Active Conflicts</span>
+                <span className="font-mono text-destructive text-sm font-bold shadow-[0_0_10px_rgba(255,0,0,0.2)]">{events.filter(e => e.source.includes('OCHA')).length}</span>
               </div>
               <div className="glass-panel-hover p-3 rounded-lg flex justify-between items-center border border-cyan-500/10">
-                <span className="font-mono text-primary/70 text-xs">ETH/USDT</span>
-                <span className="font-mono text-white text-sm font-bold shadow-[0_0_10px_rgba(255,255,255,0.2)]">${stats?.eth_price?.toLocaleString() || "---"}</span>
+                <span className="font-mono text-primary/70 text-xs flex items-center"><AlertTriangle className="h-3 w-3 mr-2 text-orange-500"/> Disasters / Alerts</span>
+                <span className="font-mono text-orange-400 text-sm font-bold shadow-[0_0_10px_rgba(255,165,0,0.2)]">{events.filter(e => e.source.includes('GDACS') || e.source.includes('NASA')).length}</span>
               </div>
             </div>
           </div>

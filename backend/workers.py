@@ -151,6 +151,51 @@ async def gdacs_worker(r: redis.Redis, active_interface: str = ""):
             
         await asyncio.sleep(600)
 
+async def conflict_worker(r: redis.Redis, active_interface: str = ""):
+    print("Started UN ReliefWeb Conflict Worker")
+    transport = httpx.AsyncHTTPTransport(local_address=active_interface) if active_interface else httpx.AsyncHTTPTransport()
+    seen_ids = set()
+    
+    async with httpx.AsyncClient(transport=transport) as client:
+        while True:
+            try:
+                # ReliefWeb API for active conflicts / complex emergencies
+                resp = await client.get("https://api.reliefweb.int/v1/disasters?appname=argus&profile=full&preset=latest&limit=50&query[value]=type:%22Complex%20Emergency%22", timeout=15)
+                if resp.status_code == 200:
+                    data = orjson.loads(resp.content)
+                    
+                    for item in data.get("data", []):
+                        fields = item.get("fields", {})
+                        conflict_id = item.get("id")
+                        
+                        if conflict_id in seen_ids:
+                            continue
+                            
+                        primary_country = fields.get("primary_country", {})
+                        location = primary_country.get("location")
+                        
+                        if not location:
+                            continue
+                            
+                        event = {
+                            "type": "CRITICAL", # Conflicts are always critical
+                            "title": fields.get("name", "Unknown Conflict"),
+                            "coordinates": [location["lon"], location["lat"]],
+                            "timestamp": int(time.time() * 1000),
+                            "id": f"conflict_{conflict_id}",
+                            "source": "UN OCHA (ReliefWeb)"
+                        }
+                        
+                        seen_ids.add(conflict_id)
+                        payload = orjson.dumps({"type": "NEW_EVENT", "data": event})
+                        await r.publish("argus_live_events", payload)
+                        await asyncio.sleep(0.1)
+                        
+            except Exception as e:
+                print(f"Conflict Worker Error: {e}")
+                
+            await asyncio.sleep(3600) # Fetch once an hour since conflicts don't update every second
+
 async def market_worker(r: redis.Redis, active_interface: str = ""):
     print("Started Global Market Worker")
     transport = httpx.AsyncHTTPTransport(local_address=active_interface) if active_interface else httpx.AsyncHTTPTransport()
@@ -185,6 +230,7 @@ async def start_workers():
         usgs_worker(r, active_interface),
         eonet_worker(r, active_interface),
         gdacs_worker(r, active_interface),
+        conflict_worker(r, active_interface),
         market_worker(r, active_interface)
     )
 

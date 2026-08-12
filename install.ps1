@@ -50,7 +50,7 @@ function Invoke-FastDownload {
                 $empty = $barLength - $filled
                 if ($empty -lt 0) { $empty = 0 }
                 
-                $bar = ("█" * $filled) + ("░" * $empty)
+                $bar = ("=" * $filled) + ("-" * $empty)
                 
                 Write-Host "`r    [$bar] $percent% ($mbReceived MB / $mbTotal MB)" -NoNewline -ForegroundColor Cyan
             }
@@ -61,7 +61,7 @@ function Invoke-FastDownload {
     $stream.Close()
     $response.Close()
     
-    Write-Host "`r    [████████████████████████████████████████] 100% (Download abgeschlossen)                    `n" -ForegroundColor Green
+    Write-Host "`r    [========================================] 100% (Download abgeschlossen)                    `n" -ForegroundColor Green
 }
 
 function Show-StepProgress {
@@ -79,10 +79,10 @@ function Show-StepProgress {
         $filled = [math]::Floor(($percent / 100) * $barLength)
         $empty = $barLength - $filled
         
-        $bar = ("█" * $filled) + ("░" * $empty)
+        $bar = ("=" * $filled) + ("-" * $empty)
         Write-Host "`r    [$bar] $percent%" -NoNewline -ForegroundColor Cyan
     }
-    Write-Host "`r    [████████████████████████████████████████] 100% (Abgeschlossen)                    `n" -ForegroundColor Green
+    Write-Host "`r    [========================================] 100% (Abgeschlossen)                    `n" -ForegroundColor Green
 }
 
 $ShortcutPath = "$env:USERPROFILE\Desktop\Argus Command Center.lnk"

@@ -26,6 +26,7 @@ interface ArgusStore {
   showLeftSidebar: boolean;
   showRightSidebar: boolean;
   showTicker: boolean;
+  mapStyle: 'dark' | 'satellite';
   initWorker: () => void;
   toggleHeatmap: () => void;
   toggleScatterplot: () => void;
@@ -35,6 +36,7 @@ interface ArgusStore {
   toggleLeftSidebar: () => void;
   toggleRightSidebar: () => void;
   toggleTicker: () => void;
+  toggleMapStyle: () => void;
   clearEvents: () => void;
   resetUI: () => void;
 }
@@ -55,6 +57,7 @@ export const useArgusStore = create<ArgusStore>()(
   showLeftSidebar: true,
   showRightSidebar: true,
   showTicker: true,
+  mapStyle: 'dark',
   
   toggleHeatmap: () => set((state) => ({ showHeatmap: !state.showHeatmap })),
   toggleScatterplot: () => set((state) => ({ showScatterplot: !state.showScatterplot })),
@@ -64,6 +67,7 @@ export const useArgusStore = create<ArgusStore>()(
   toggleLeftSidebar: () => set((state) => ({ showLeftSidebar: !state.showLeftSidebar })),
   toggleRightSidebar: () => set((state) => ({ showRightSidebar: !state.showRightSidebar })),
   toggleTicker: () => set((state) => ({ showTicker: !state.showTicker })),
+  toggleMapStyle: () => set((state) => ({ mapStyle: state.mapStyle === 'dark' ? 'satellite' : 'dark' })),
   clearEvents: () => set({ events: [], binaryPositions: null }),
   
   resetUI: () => set({ 
@@ -74,6 +78,7 @@ export const useArgusStore = create<ArgusStore>()(
     showLeftSidebar: true,
     showRightSidebar: true,
     showTicker: true,
+    mapStyle: 'dark',
     isPaused: false
   }),
   
@@ -137,7 +142,8 @@ export const useArgusStore = create<ArgusStore>()(
     localOnlyMode: state.localOnlyMode,
     showLeftSidebar: state.showLeftSidebar,
     showRightSidebar: state.showRightSidebar,
-    showTicker: state.showTicker
+    showTicker: state.showTicker,
+    mapStyle: state.mapStyle
   }),
 }
 )
