@@ -85,9 +85,8 @@ class LocalAPIHandler(BaseHTTPRequestHandler):
             update_available = False
             try:
                 current_dir = os.path.dirname(os.path.abspath(__file__))
-                subprocess.run(["git", "fetch", "origin", "main"], cwd=current_dir, capture_output=True, timeout=10)
                 local_hash = subprocess.run(["git", "rev-parse", "HEAD"], cwd=current_dir, capture_output=True, text=True, timeout=5).stdout.strip()
-                remote_hash = subprocess.run(["git", "rev-parse", "origin/main"], cwd=current_dir, capture_output=True, text=True, timeout=5).stdout.strip()
+                remote_hash = subprocess.run(["git", "ls-remote", "origin", "-h", "refs/heads/main"], cwd=current_dir, capture_output=True, text=True, timeout=10).stdout.strip().split('\t')[0]
                 
                 if local_hash and remote_hash and local_hash != remote_hash:
                     update_available = True

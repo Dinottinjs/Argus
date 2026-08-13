@@ -149,49 +149,66 @@ async def gdacs_worker(r: redis.Redis, active_interface: str = ""):
         await asyncio.sleep(600)
 
 async def conflict_worker(r: redis.Redis, active_interface: str = ""):
-    print("Started UN ReliefWeb Conflict Worker")
+    print("Started Wikidata Conflict Worker")
     transport = httpx.AsyncHTTPTransport(local_address=active_interface) if active_interface else httpx.AsyncHTTPTransport()
     seen_ids = set()
     
-    async with httpx.AsyncClient(transport=transport) as client:
+    sparql_query = """
+    SELECT ?c ?cLabel ?coord WHERE {
+      ?c wdt:P31 wd:Q350604; wdt:P580 ?start.
+      MINUS { ?c wdt:P582 ?end. }
+      OPTIONAL { ?c wdt:P625 ?coord. }
+      OPTIONAL { ?c wdt:P17 ?country. ?country wdt:P625 ?coord. }
+      SERVICE wikibase:label { bd:serviceParam wikibase:language "en,de". }
+    } LIMIT 150
+    """
+    
+    url = "https://query.wikidata.org/sparql"
+    
+    async with httpx.AsyncClient(transport=transport, headers={"User-Agent": "Argus/1.0", "Accept": "application/sparql-results+json"}) as client:
         while True:
             try:
-                # ReliefWeb API for all active disasters & conflicts
-                resp = await client.get("https://api.reliefweb.int/v1/disasters?appname=argus&profile=full&preset=latest&limit=100&query[value]=status:current", timeout=15)
+                resp = await client.get(url, params={"query": sparql_query}, timeout=30)
                 if resp.status_code == 200:
                     data = orjson.loads(resp.content)
                     
-                    for item in data.get("data", []):
-                        fields = item.get("fields", {})
-                        conflict_id = item.get("id")
+                    for item in data.get("results", {}).get("bindings", []):
+                        conflict_uri = item.get("c", {}).get("value", "")
+                        conflict_id = conflict_uri.split('/')[-1]
                         
                         if conflict_id in seen_ids:
                             continue
                             
-                        primary_country = fields.get("primary_country", {})
-                        location = primary_country.get("location")
-                        
-                        if not location:
+                        coord_val = item.get("coord", {}).get("value", "")
+                        if not coord_val.startswith("Point("):
                             continue
+                        
+                        # Point(lon lat)
+                        lon_str, lat_str = coord_val.replace("Point(", "").replace(")", "").split(" ")
+                        lon, lat = float(lon_str), float(lat_str)
                             
                         event = {
-                            "type": "CRITICAL", # Conflicts are always critical
-                            "title": fields.get("name", "Unknown Conflict"),
-                            "coordinates": [location["lon"], location["lat"]],
-                            "timestamp": int(time.time() * 1000),
-                            "id": f"conflict_{conflict_id}",
-                            "source": "UN OCHA (ReliefWeb)",
+                            "type": "CRITICAL",
+                            "title": item.get("cLabel", {}).get("value", "Unknown Conflict"),
+                            "coordinates": [lon, lat],
+                            "time": datetime.utcnow().strftime("%H:%M:%S UTC"),
+                            "id": f"WIKI-{conflict_id}",
+                            "source": "UN OCHA ReliefWeb / Wikidata",
                             "is_conflict": True
                         }
                         
                         seen_ids.add(conflict_id)
-                        payload = orjson.dumps({"type": "NEW_EVENT", "data": event})
-                        await r.publish("argus_live_events", payload)
+                        await r.lpush("argus_events", orjson.dumps(event))
+                        await r.ltrim("argus_events", 0, 99)
+                        
+                        event_payload = orjson.dumps({"type": "NEW_EVENT", "data": event})
+                        await r.publish("argus_live", event_payload)
+                        await asyncio.sleep(0.5)
                         
             except Exception as e:
-                print(f"Conflict Worker Error: {e}")
-                
-            await asyncio.sleep(3600) # Fetch once an hour since conflicts don't update every second
+                print(f"Wikidata Conflict Worker Error: {e}")
+            
+            await asyncio.sleep(600)
 
 async def market_worker(r: redis.Redis, active_interface: str = ""):
     print("Started Global Market Worker")

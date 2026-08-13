@@ -59,7 +59,32 @@ export default function SettingsPage() {
       updateDesc: "Argus can automatically pull the latest intelligence packages, map engines, and data workers from the master repository.",
       dangerZone: "Danger Zone",
       dangerDesc: "Permanently remove the Argus Command Center, including all Docker containers, desktop shortcuts, and local files from this system.",
-      uninstall: "Uninstall System Completely"
+      uninstall: "Uninstall System Completely",
+      languageLabel: "Language / Sprache",
+      secLabel: "Security & Accessibility",
+      reduceMotion: "Reduce Motion & Animations",
+      reduceMotionDesc: "Disables the Bloomberg ticker scrolling and CSS pulse effects to reduce GPU load and prevent motion sickness.",
+      enabled: "Enabled",
+      disabled: "Disabled",
+      airGapped: "Air-Gapped / Local Only Mode",
+      airGappedDesc: "Stops all external API calls (USGS, BBC, Binance). Map will only show locally generated internal telemetry data.",
+      updateStatus: "Argus Version Status",
+      checkUpdate: "Checking for updates...",
+      updateAvail: "New major update available!",
+      upToDate: "System is up to date.",
+      checkAgain: "Check Again",
+      installNow: "Install Update Now",
+      updating: "Updating...",
+      layoutCust: "Layout Customization",
+      resetUi: "Load Defaults (Reset UI)",
+      liveFeed: "Live Feed (Left Sidebar)",
+      liveFeedDesc: "Displays the continuous stream of global signals and logs.",
+      analytics: "Analytics & Telemetry (Right Sidebar)",
+      analyticsDesc: "Displays global sentiment, crypto prices, and internal system metrics.",
+      tickerLabel: "Bloomberg Ticker (Bottom Bar)",
+      tickerDesc: "Displays the animated marquee ticker at the bottom of the screen.",
+      visible: "Visible",
+      hidden: "Hidden"
     },
     de: {
       settings: "Argus Einstellungen",
@@ -70,7 +95,32 @@ export default function SettingsPage() {
       updateDesc: "Argus kann automatisch die neuesten Intelligence Packages, Karten-Engines und Data-Worker herunterladen.",
       dangerZone: "Gefahrenzone",
       dangerDesc: "Argus Command Center vollständig vom System entfernen (inkl. Docker Container, Verknüpfungen und Daten).",
-      uninstall: "System vollständig deinstallieren"
+      uninstall: "System vollständig deinstallieren",
+      languageLabel: "Sprache / Language",
+      secLabel: "Sicherheit & Barrierefreiheit",
+      reduceMotion: "Animationen & Bewegung reduzieren",
+      reduceMotionDesc: "Deaktiviert den Bloomberg-Ticker und CSS-Pulseffekte, um die GPU zu entlasten und Motion Sickness zu vermeiden.",
+      enabled: "Aktiviert",
+      disabled: "Deaktiviert",
+      airGapped: "Air-Gapped / Nur-Lokal Modus",
+      airGappedDesc: "Stoppt alle externen API-Aufrufe. Die Karte zeigt nur lokal generierte interne Telemetriedaten.",
+      updateStatus: "Argus Versions-Status",
+      checkUpdate: "Suche nach Updates...",
+      updateAvail: "Neues Major-Update verfügbar!",
+      upToDate: "System ist auf dem neuesten Stand.",
+      checkAgain: "Erneut prüfen",
+      installNow: "Update jetzt installieren",
+      updating: "Aktualisiert...",
+      layoutCust: "Layout Anpassung",
+      resetUi: "Standardwerte laden",
+      liveFeed: "Live Feed (Linke Seitenleiste)",
+      liveFeedDesc: "Zeigt den kontinuierlichen Stream globaler Signale und Logs.",
+      analytics: "Analysen & Telemetrie (Rechte Seitenleiste)",
+      analyticsDesc: "Zeigt die globale Stimmung, Krypto-Preise und interne Systemmetriken.",
+      tickerLabel: "Bloomberg Ticker (Untere Leiste)",
+      tickerDesc: "Zeigt den animierten Marquee-Ticker am unteren Bildschirmrand.",
+      visible: "Sichtbar",
+      hidden: "Versteckt"
     }
   };
   
@@ -136,7 +186,7 @@ export default function SettingsPage() {
           <section className="p-6 border border-border bg-card/50 rounded-lg">
             <div className="flex items-center gap-3 mb-4">
               <svg xmlns="http://www.w3.org/2000/svg" className="text-primary h-6 w-6" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/><path d="M2 12h20"/></svg>
-              <h2 className="text-lg font-bold uppercase tracking-wider text-muted-foreground">{language === 'en' ? 'Language / Sprache' : 'Sprache / Language'}</h2>
+              <h2 className="text-lg font-bold uppercase tracking-wider text-muted-foreground">{t.languageLabel}</h2>
             </div>
             
             <div className="flex gap-4 items-center">
@@ -183,35 +233,35 @@ export default function SettingsPage() {
           <section className="p-6 border border-border bg-card/50 rounded-lg mt-8">
             <div className="flex items-center gap-3 mb-4">
               <ShieldAlert className="text-primary h-6 w-6" />
-              <h2 className="text-lg font-bold uppercase tracking-wider text-muted-foreground">Security & Accessibility</h2>
+              <h2 className="text-lg font-bold uppercase tracking-wider text-muted-foreground">{t.secLabel}</h2>
             </div>
             
             <div className="space-y-6">
               <div className="flex items-center justify-between p-4 border border-cyan-500/20 bg-black/40 rounded-lg">
                 <div>
-                  <h3 className="font-bold text-primary">Reduce Motion & Animations</h3>
-                  <p className="text-xs text-muted-foreground mt-1">Disables the Bloomberg ticker scrolling and CSS pulse effects to reduce GPU load and prevent motion sickness.</p>
+                  <h3 className="font-bold text-primary">{t.reduceMotion}</h3>
+                  <p className="text-xs text-muted-foreground mt-1">{t.reduceMotionDesc}</p>
                 </div>
                 <Button 
                   onClick={toggleReduceMotion}
                   variant={reduceMotion ? "default" : "outline"} 
                   className={reduceMotion ? "bg-primary text-black font-bold" : "border-cyan-500/30 text-primary"}
                 >
-                  {reduceMotion ? "Enabled" : "Disabled"}
+                  {reduceMotion ? t.enabled : t.disabled}
                 </Button>
               </div>
 
               <div className="flex items-center justify-between p-4 border border-cyan-500/20 bg-black/40 rounded-lg">
                 <div>
-                  <h3 className="font-bold text-primary">Air-Gapped / Local Only Mode</h3>
-                  <p className="text-xs text-muted-foreground mt-1">Stops all external API calls (USGS, BBC, Binance). Map will only show locally generated internal telemetry data.</p>
+                  <h3 className="font-bold text-primary">{t.airGapped}</h3>
+                  <p className="text-xs text-muted-foreground mt-1">{t.airGappedDesc}</p>
                 </div>
                 <Button 
                   onClick={toggleLocalOnlyMode}
                   variant={localOnlyMode ? "destructive" : "outline"} 
                   className={localOnlyMode ? "bg-destructive text-white font-bold" : "border-cyan-500/30 text-primary"}
                 >
-                  {localOnlyMode ? "Enabled" : "Disabled"}
+                  {localOnlyMode ? t.enabled : t.disabled}
                 </Button>
               </div>
             </div>
@@ -221,10 +271,10 @@ export default function SettingsPage() {
           <section className="p-6 border border-border bg-card/50 rounded-lg">
             <div className="flex items-center gap-3 mb-4">
               <RefreshCw className={`text-primary h-6 w-6 ${checkingUpdate ? 'animate-spin' : ''}`} />
-              <h2 className="text-lg font-bold uppercase tracking-wider text-muted-foreground">System Updates</h2>
+              <h2 className="text-lg font-bold uppercase tracking-wider text-muted-foreground">{t.systemUpdate}</h2>
             </div>
             <p className="text-sm text-muted-foreground mb-6">
-              Argus can automatically pull the latest intelligence packages, map engines, and data workers from the master repository.
+              {t.updateDesc}
             </p>
             
             <div className="flex flex-col gap-4">
@@ -236,16 +286,19 @@ export default function SettingsPage() {
                     <CheckCircle className="text-green-500 h-6 w-6" />
                   )}
                   <div>
-                    <div className="font-bold text-sm">Argus Version Status</div>
+                    <div className="font-bold text-sm flex items-center gap-2">
+                      {t.updateStatus}
+                      <span className="bg-primary/20 text-primary border border-primary/50 px-2 py-0.5 rounded text-[10px] uppercase shadow-[0_0_10px_rgba(6,182,212,0.6)] animate-pulse-glow">V12</span>
+                    </div>
                     <div className="text-xs text-muted-foreground">
-                      {checkingUpdate ? 'Checking for updates...' : updateAvailable ? 'New major update available!' : 'System is up to date.'}
+                      {checkingUpdate ? t.checkUpdate : updateAvailable ? t.updateAvail : t.upToDate}
                     </div>
                   </div>
                 </div>
                 
                 <div className="flex items-center gap-2">
                   <Button variant="outline" size="sm" onClick={checkForUpdates} disabled={checkingUpdate || isUpdating}>
-                    Check Again
+                    {t.checkAgain}
                   </Button>
                   {updateAvailable && (
                     <Button 
@@ -253,7 +306,7 @@ export default function SettingsPage() {
                       disabled={isUpdating}
                       className="bg-primary text-primary-foreground hover:bg-primary/90 shadow-[0_0_15px_rgba(6,182,212,0.5)] animate-pulse-glow"
                     >
-                      {isUpdating ? 'Updating...' : 'Install Update Now'}
+                      {isUpdating ? t.updating : t.installNow}
                     </Button>
                   )}
                 </div>
@@ -266,53 +319,53 @@ export default function SettingsPage() {
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-3">
                 <svg xmlns="http://www.w3.org/2000/svg" className="text-primary h-6 w-6" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M3 9h18"/><path d="M9 21V9"/></svg>
-                <h2 className="text-lg font-bold uppercase tracking-wider text-muted-foreground">Layout Customization</h2>
+                <h2 className="text-lg font-bold uppercase tracking-wider text-muted-foreground">{t.layoutCust}</h2>
               </div>
               <Button onClick={() => { resetUI(); alert("Layout reset to defaults!"); }} variant="outline" className="border-primary/50 text-primary hover:bg-primary/20">
-                Standardwerte laden (Reset UI)
+                {t.resetUi}
               </Button>
             </div>
             
             <div className="space-y-6">
               <div className="flex items-center justify-between p-4 border border-cyan-500/20 bg-black/40 rounded-lg">
                 <div>
-                  <h3 className="font-bold text-primary">Live Feed (Left Sidebar)</h3>
-                  <p className="text-xs text-muted-foreground mt-1">Displays the continuous stream of global signals and logs.</p>
+                  <h3 className="font-bold text-primary">{t.liveFeed}</h3>
+                  <p className="text-xs text-muted-foreground mt-1">{t.liveFeedDesc}</p>
                 </div>
                 <Button 
                   onClick={toggleLeftSidebar}
                   variant={showLeftSidebar ? "default" : "outline"} 
                   className={showLeftSidebar ? "bg-primary text-black font-bold" : "border-cyan-500/30 text-primary"}
                 >
-                  {showLeftSidebar ? "Visible" : "Hidden"}
+                  {showLeftSidebar ? t.visible : t.hidden}
                 </Button>
               </div>
 
               <div className="flex items-center justify-between p-4 border border-cyan-500/20 bg-black/40 rounded-lg">
                 <div>
-                  <h3 className="font-bold text-primary">Analytics & Telemetry (Right Sidebar)</h3>
-                  <p className="text-xs text-muted-foreground mt-1">Displays global sentiment, crypto prices, and internal system metrics.</p>
+                  <h3 className="font-bold text-primary">{t.analytics}</h3>
+                  <p className="text-xs text-muted-foreground mt-1">{t.analyticsDesc}</p>
                 </div>
                 <Button 
                   onClick={toggleRightSidebar}
                   variant={showRightSidebar ? "default" : "outline"} 
                   className={showRightSidebar ? "bg-primary text-black font-bold" : "border-cyan-500/30 text-primary"}
                 >
-                  {showRightSidebar ? "Visible" : "Hidden"}
+                  {showRightSidebar ? t.visible : t.hidden}
                 </Button>
               </div>
               
               <div className="flex items-center justify-between p-4 border border-cyan-500/20 bg-black/40 rounded-lg">
                 <div>
-                  <h3 className="font-bold text-primary">Bloomberg Ticker (Bottom Bar)</h3>
-                  <p className="text-xs text-muted-foreground mt-1">Displays the animated marquee ticker at the bottom of the screen.</p>
+                  <h3 className="font-bold text-primary">{t.tickerLabel}</h3>
+                  <p className="text-xs text-muted-foreground mt-1">{t.tickerDesc}</p>
                 </div>
                 <Button 
                   onClick={toggleTicker}
                   variant={showTicker ? "default" : "outline"} 
                   className={showTicker ? "bg-primary text-black font-bold" : "border-cyan-500/30 text-primary"}
                 >
-                  {showTicker ? "Visible" : "Hidden"}
+                  {showTicker ? t.visible : t.hidden}
                 </Button>
               </div>
             </div>
@@ -333,7 +386,7 @@ export default function SettingsPage() {
           </section>
 
           <footer className="mt-8 text-center text-xs text-muted-foreground py-4">
-            © 2026 Maximilian Holzer. All rights reserved.
+            © 2026 Dinottinjs. All rights reserved.
           </footer>
 
 
