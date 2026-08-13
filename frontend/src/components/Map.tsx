@@ -162,13 +162,16 @@ export default function GlobalMap() {
   return (
     <div className="relative w-full h-full">
       <DeckGL
-        // @ts-ignore
         views={[new MapView({ id: 'main', farZMultiplier: 100, repeat: false })]}
-        // @ts-ignore
-        viewState={deckViewState}
-        onViewStateChange={({viewState}) => setViewState(viewState)}
-        controller={true}
         layers={layers}
+        viewState={deckViewState}
+        onViewStateChange={({viewState}) => {
+          // Strictly limit the map panning bounds
+          viewState.longitude = Math.min(180, Math.max(-180, viewState.longitude));
+          viewState.latitude = Math.min(85, Math.max(-85, viewState.latitude));
+          setViewState(viewState);
+        }}
+        controller={true}
         getTooltip={({object}: any) => {
           if (!object) return null;
           if (object.properties && object.properties.admin) return object.properties.admin;

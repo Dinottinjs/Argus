@@ -87,12 +87,32 @@ class LocalAPIHandler(BaseHTTPRequestHandler):
             try:
                 current_dir = os.path.dirname(os.path.abspath(__file__))
                 subprocess.run(["git", "fetch", "origin", "main"], cwd=current_dir, timeout=10)
-                local_hash = subprocess.run(["git", "rev-parse", "HEAD"], cwd=current_dir, capture_output=True, text=True, timeout=5).stdout.strip()
-                remote_hash = subprocess.run(["git", "rev-parse", "origin/main"], cwd=current_dir, capture_output=True, text=True, timeout=5).stdout.strip()
                 
-                if local_hash and remote_hash and local_hash != remote_hash:
+                # Compare versions using version.json
+                local_version_file = os.path.join(current_dir, "version.json")
+                local_version = "0.0.0"
+                if os.path.exists(local_version_file):
+                    with open(local_version_file, "r") as f:
+                        import json as local_json
+                        local_version = local_json.load(f).get("version", "0.0.0")
+                        
+                remote_version_raw = subprocess.run(["git", "show", "origin/main:version.json"], cwd=current_dir, capture_output=True, text=True, timeout=5).stdout.strip()
+                remote_version = "0.0.0"
+                if remote_version_raw:
+                    import json as remote_json
+                    try:
+                        remote_version = remote_json.loads(remote_version_raw).get("version", "0.0.0")
+                    except:
+                        pass
+                
+                if local_version != remote_version:
                     update_available = True
-                    preview = subprocess.run(["git", "log", "--oneline", f"{local_hash}..{remote_hash}"], cwd=current_dir, capture_output=True, text=True, timeout=5).stdout.strip()
+                    # Still grab the git log for the preview
+                    local_hash = subprocess.run(["git", "rev-parse", "HEAD"], cwd=current_dir, capture_output=True, text=True, timeout=5).stdout.strip()
+                    remote_hash = subprocess.run(["git", "rev-parse", "origin/main"], cwd=current_dir, capture_output=True, text=True, timeout=5).stdout.strip()
+                    if local_hash and remote_hash and local_hash != remote_hash:
+                        preview = f"Update available: v{local_version} -> v{remote_version}\n\n"
+                        preview += subprocess.run(["git", "log", "--oneline", f"{local_hash}..{remote_hash}"], cwd=current_dir, capture_output=True, text=True, timeout=5).stdout.strip()
             except Exception as e:
                 print(f"Update check error: {e}")
             self.wfile.write(json.dumps({"update_available": update_available, "preview": preview}).encode('utf-8'))

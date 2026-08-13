@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { useArgusStore } from "@/store/useArgusStore";
+import versionData from "../../../../version.json";
 
 const GlobalMap = dynamic(() => import("@/components/Map"), {
   ssr: false,
@@ -135,13 +136,13 @@ export default function ArgusDashboard() {
     <div className="flex flex-col h-screen overflow-hidden bg-transparent text-foreground dark">
       {/* HEADER / TOP BAR */}
       <header className="h-16 glass-panel flex items-center justify-between px-6 z-10 shrink-0 border-b-0 shadow-md">
-        <div className="flex items-center gap-3 group cursor-default">
-          <ShieldAlert className="text-primary h-6 w-6 animate-pulse-glow" />
-          <h1 className="text-xl font-bold tracking-widest text-primary uppercase neon-text group-hover:scale-105 transition-transform">
+        <div className="flex items-center gap-4 group cursor-default ml-2">
+          <ShieldAlert className="text-primary h-8 w-8 animate-pulse-glow drop-shadow-[0_0_10px_rgba(6,182,212,0.8)]" />
+          <h1 className="text-2xl font-bold tracking-widest text-primary uppercase neon-text drop-shadow-[0_0_15px_rgba(6,182,212,0.9)] group-hover:scale-[1.02] transition-transform">
             {t.title}
           </h1>
-          <Badge className="ml-2 bg-primary/20 text-primary border border-primary/50 px-2 py-0.5 text-[10px] uppercase shadow-[0_0_10px_rgba(6,182,212,0.6)] animate-pulse-glow hidden md:flex">
-            V12
+          <Badge className="ml-3 bg-transparent text-primary border border-primary px-3 py-1 text-[12px] uppercase shadow-[0_0_15px_rgba(6,182,212,0.8)] animate-pulse-glow hidden md:flex rounded-full tracking-widest font-bold">
+            v{versionData.version}
           </Badge>
         </div>
         

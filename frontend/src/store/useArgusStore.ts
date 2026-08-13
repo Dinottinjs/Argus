@@ -169,11 +169,13 @@ export const useArgusStore = create<ArgusStore>()(
     const worker = new Worker(new URL('../workers/data.worker.ts', import.meta.url));
     
     worker.onmessage = (e) => {
-        const { type, status, events, binaryData, stats } = e.data;
+        const { type, status, events, binaryData, stats, newsStats } = e.data;
         if (type === 'STATUS') {
             set({ status });
         } else if (type === 'UPDATE_STATS') {
-            set({ stats });
+          set({ stats });
+        } else if (type === 'UPDATE_NEWS_STATS') {
+          set({ newsStats });
         } else if (type === 'BATCH_EVENTS') {
             set((state) => {
                 if (state.isPaused) return state; // Do not accept new events if paused

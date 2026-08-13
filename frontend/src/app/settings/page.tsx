@@ -5,6 +5,7 @@ import { ArrowLeft, ShieldAlert, Trash2, Network, RefreshCw, DownloadCloud, Chec
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
 import { useArgusStore } from "@/store/useArgusStore";
+import versionData from "../../../../version.json";
 
 export default function SettingsPage() {
   const router = useRouter();
@@ -202,7 +203,7 @@ export default function SettingsPage() {
       </header>
 
       {/* MAIN */}
-      <main className="flex-1 overflow-y-auto p-10 max-w-6xl mx-auto w-full">
+      <main className="flex-1 overflow-y-auto no-scrollbar p-10 max-w-6xl mx-auto w-full">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                 {/* Language / Sprache */}
           <section className="p-6 border border-border bg-card/50 rounded-lg flex flex-col">
@@ -324,7 +325,7 @@ export default function SettingsPage() {
                   <div>
                     <div className="font-bold text-sm flex items-center gap-2">
                       {t.updateStatus}
-                      <span className="bg-primary/20 text-primary border border-primary/50 px-2 py-0.5 rounded text-[10px] uppercase shadow-[0_0_10px_rgba(6,182,212,0.6)] animate-pulse-glow">V12</span>
+                      <span className="bg-primary/20 text-primary border border-primary/50 px-2 py-0.5 rounded text-[10px] uppercase shadow-[0_0_10px_rgba(6,182,212,0.6)] animate-pulse-glow">v{versionData.version}</span>
                     </div>
                     <div className="text-xs text-muted-foreground">
                       {checkingUpdate ? t.checkUpdate : updateAvailable ? t.updateAvail : t.upToDate}
