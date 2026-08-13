@@ -156,8 +156,8 @@ async def conflict_worker(r: redis.Redis, active_interface: str = ""):
     async with httpx.AsyncClient(transport=transport) as client:
         while True:
             try:
-                # ReliefWeb API for active conflicts (Complex Emergencies) & Epidemics
-                resp = await client.get("https://api.reliefweb.int/v1/disasters?appname=argus&profile=full&preset=latest&limit=50&query[value]=type:(%22Complex%20Emergency%22%20OR%20%22Epidemic%22)", timeout=15)
+                # ReliefWeb API for all active disasters & conflicts
+                resp = await client.get("https://api.reliefweb.int/v1/disasters?appname=argus&profile=full&preset=latest&limit=100&query[value]=status:current", timeout=15)
                 if resp.status_code == 200:
                     data = orjson.loads(resp.content)
                     
@@ -180,7 +180,8 @@ async def conflict_worker(r: redis.Redis, active_interface: str = ""):
                             "coordinates": [location["lon"], location["lat"]],
                             "timestamp": int(time.time() * 1000),
                             "id": f"conflict_{conflict_id}",
-                            "source": "UN OCHA (ReliefWeb)"
+                            "source": "UN OCHA (ReliefWeb)",
+                            "is_conflict": True
                         }
                         
                         seen_ids.add(conflict_id)
@@ -217,6 +218,35 @@ async def market_worker(r: redis.Redis, active_interface: str = ""):
                 
             await asyncio.sleep(5) # Real-time every 5 seconds
 
+async def iss_worker(r: redis.Redis, active_interface: str = ""):
+    print("Started ISS Tracker Worker")
+    transport = httpx.AsyncHTTPTransport(local_address=active_interface) if active_interface else httpx.AsyncHTTPTransport()
+    
+    async with httpx.AsyncClient(transport=transport) as client:
+        while True:
+            try:
+                resp = await client.get("http://api.open-notify.org/iss-now.json", timeout=5)
+                if resp.status_code == 200:
+                    data = orjson.loads(resp.content)
+                    
+                    if data.get("message") == "success":
+                        pos = data["iss_position"]
+                        event = {
+                            "type": "ISS_TRACKER",
+                            "title": "International Space Station",
+                            "coordinates": [float(pos["longitude"]), float(pos["latitude"])],
+                            "timestamp": int(time.time() * 1000),
+                            "id": "iss_current",
+                            "source": "NASA/Open-Notify"
+                        }
+                        
+                        payload = orjson.dumps({"type": "NEW_EVENT", "data": event})
+                        await r.publish("argus_live_events", payload)
+            except Exception as e:
+                print(f"ISS Worker Error: {e}")
+                
+            await asyncio.sleep(5)
+
 async def start_workers():
     r = await redis.from_url(REDIS_URL)
     # Could dynamically read interface from Redis config if needed
@@ -227,7 +257,8 @@ async def start_workers():
         eonet_worker(r, active_interface),
         gdacs_worker(r, active_interface),
         conflict_worker(r, active_interface),
-        market_worker(r, active_interface)
+        market_worker(r, active_interface),
+        iss_worker(r, active_interface)
     )
 
 if __name__ == "__main__":

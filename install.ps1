@@ -206,19 +206,17 @@ Write-Host "[*] Generiere natives Windows App Icon (.ico)..." -ForegroundColor C
 Start-Process -FilePath "pythonw" -ArgumentList "argus_tray.py"
 
 # 6. Shortcut & Native App
-if (-not $isUpdate) {
-    Write-Host "`n[*] Erstelle Desktop Shortcut..." -ForegroundColor Cyan
-    try {
-        $WshShell = New-Object -comObject WScript.Shell
-        $Shortcut = $WshShell.CreateShortcut($ShortcutPath)
-        $Shortcut.TargetPath = "pythonw.exe"
-        $Shortcut.Arguments = """$PSScriptRoot\launcher.py"""
-        $Shortcut.IconLocation = "$PSScriptRoot\public\logo.ico"
-        $Shortcut.WorkingDirectory = "$PSScriptRoot"
-        $Shortcut.Save()
-    } catch {
-        Write-Host "[!] Konnte Shortcut nicht erstellen." -ForegroundColor Yellow
-    }
+Write-Host "`n[*] Erstelle/Aktualisiere Desktop Shortcut..." -ForegroundColor Cyan
+try {
+    $WshShell = New-Object -comObject WScript.Shell
+    $Shortcut = $WshShell.CreateShortcut($ShortcutPath)
+    $Shortcut.TargetPath = "pythonw.exe"
+    $Shortcut.Arguments = """$PSScriptRoot\launcher.py"""
+    $Shortcut.IconLocation = "$PSScriptRoot\public\logo.ico, 0"
+    $Shortcut.WorkingDirectory = "$PSScriptRoot"
+    $Shortcut.Save()
+} catch {
+    Write-Host "[!] Konnte Shortcut nicht erstellen." -ForegroundColor Yellow
 }
 
 Write-Host "`n=======================================================" -ForegroundColor Cyan

@@ -11,7 +11,8 @@ export default function SettingsPage() {
   const { 
     reduceMotion, localOnlyMode, toggleReduceMotion, toggleLocalOnlyMode,
     showLeftSidebar, showRightSidebar, showTicker,
-    toggleLeftSidebar, toggleRightSidebar, toggleTicker, resetUI
+    toggleLeftSidebar, toggleRightSidebar, toggleTicker, resetUI,
+    language, setLanguage
   } = useArgusStore();
   const [interfaces, setInterfaces] = useState<any[]>([]);
   const [selectedInterface, setSelectedInterface] = useState<string>("");
@@ -47,6 +48,33 @@ export default function SettingsPage() {
         });
     }
   };
+
+  const dict = {
+    en: {
+      settings: "Argus Settings",
+      network: "Network Binding",
+      networkDesc: "Select the dedicated network interface (WLAN/LAN) Argus should use for 24/7 continuous data polling.",
+      apply: "Apply Network Configuration",
+      systemUpdate: "System Updates",
+      updateDesc: "Argus can automatically pull the latest intelligence packages, map engines, and data workers from the master repository.",
+      dangerZone: "Danger Zone",
+      dangerDesc: "Permanently remove the Argus Command Center, including all Docker containers, desktop shortcuts, and local files from this system.",
+      uninstall: "Uninstall System Completely"
+    },
+    de: {
+      settings: "Argus Einstellungen",
+      network: "Netzwerk-Bindung",
+      networkDesc: "Wähle das Netzwerk-Interface (WLAN/LAN), das Argus für das 24/7 Daten-Polling nutzen soll.",
+      apply: "Netzwerk-Konfiguration anwenden",
+      systemUpdate: "System Updates",
+      updateDesc: "Argus kann automatisch die neuesten Intelligence Packages, Karten-Engines und Data-Worker herunterladen.",
+      dangerZone: "Gefahrenzone",
+      dangerDesc: "Argus Command Center vollständig vom System entfernen (inkl. Docker Container, Verknüpfungen und Daten).",
+      uninstall: "System vollständig deinstallieren"
+    }
+  };
+  
+  const t = dict[language];
 
   useEffect(() => {
     // Fetch interfaces from the local companion app
@@ -96,7 +124,7 @@ export default function SettingsPage() {
         <div className="flex items-center gap-3">
           <ShieldAlert className="text-primary h-6 w-6" />
           <h1 className="text-xl font-bold tracking-widest text-primary uppercase">
-            Argus Settings
+            {t.settings}
           </h1>
         </div>
       </header>
@@ -104,16 +132,33 @@ export default function SettingsPage() {
       {/* MAIN */}
       <main className="flex-1 overflow-y-auto p-10 max-w-4xl mx-auto w-full">
         <div className="space-y-12">
+                {/* Language / Sprache */}
+          <section className="p-6 border border-border bg-card/50 rounded-lg">
+            <div className="flex items-center gap-3 mb-4">
+              <svg xmlns="http://www.w3.org/2000/svg" className="text-primary h-6 w-6" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/><path d="M2 12h20"/></svg>
+              <h2 className="text-lg font-bold uppercase tracking-wider text-muted-foreground">{language === 'en' ? 'Language / Sprache' : 'Sprache / Language'}</h2>
+            </div>
+            
+            <div className="flex gap-4 items-center">
+              <select 
+                className="flex-1 bg-input/50 border border-border rounded-md px-3 py-2 text-sm focus:ring-primary focus:border-primary outline-none"
+                value={language}
+                onChange={(e) => setLanguage(e.target.value as 'en' | 'de')}
+              >
+                <option value="en">English</option>
+                <option value="de">Deutsch</option>
+              </select>
+            </div>
+          </section>
           
           {/* Network Settings */}
           <section className="p-6 border border-border bg-card/50 rounded-lg">
             <div className="flex items-center gap-3 mb-4">
               <Network className="text-primary h-6 w-6" />
-              <h2 className="text-lg font-bold uppercase tracking-wider text-muted-foreground">Network Binding</h2>
+              <h2 className="text-lg font-bold uppercase tracking-wider text-muted-foreground">{t.network}</h2>
             </div>
             <p className="text-sm text-muted-foreground mb-6">
-              Select the dedicated network interface (WLAN/LAN) Argus should use for 24/7 continuous data polling. 
-              This ensures stability if you have multiple network adapters.
+              {t.networkDesc}
             </p>
             
             <div className="flex gap-4 items-center">
@@ -128,10 +173,10 @@ export default function SettingsPage() {
                 ))}
               </select>
               <Button onClick={handleSaveNetwork} className="bg-primary text-primary-foreground hover:bg-primary/90">
-                Apply Network Configuration
+                {t.apply}
               </Button>
             </div>
-            {statusMsg && <p className="text-primary mt-3 text-sm">{statusMsg}</p>}
+            {statusMsg && <p className="text-green-500 mt-4 text-sm font-bold">{statusMsg}</p>}
           </section>
 
           {/* Security & Accessibility Settings */}
@@ -277,15 +322,20 @@ export default function SettingsPage() {
           <section className="p-6 border border-destructive/50 bg-destructive/10 rounded-lg mt-12">
             <div className="flex items-center gap-3 mb-4">
               <Trash2 className="text-destructive h-6 w-6" />
-              <h2 className="text-lg font-bold uppercase tracking-wider text-destructive">Danger Zone</h2>
+              <h2 className="text-lg font-bold uppercase tracking-wider text-destructive">{t.dangerZone}</h2>
             </div>
             <p className="text-sm text-muted-foreground mb-6">
-              Permanently remove the Argus Command Center, including all Docker containers, desktop shortcuts, and local files from this system.
+              {t.dangerDesc}
             </p>
             <Button onClick={handleUninstall} variant="destructive" className="w-full uppercase font-bold tracking-widest">
-              Uninstall System Completely
+              {t.uninstall}
             </Button>
           </section>
+
+          <footer className="mt-8 text-center text-xs text-muted-foreground py-4">
+            © 2026 Maximilian Holzer. All rights reserved.
+          </footer>
+
 
         </div>
       </main>

@@ -34,8 +34,8 @@ export default function ArgusDashboard() {
       // Very basic country filtering: check if country name is in title
       if (selectedCountry && !e.title.toLowerCase().includes(selectedCountry.toLowerCase())) return false;
       
-      if (activeTab === 'CONFLICTS') return e.source.includes('OCHA');
-      if (activeTab === 'DISASTERS') return e.source.includes('GDACS') || e.source.includes('NASA') || e.source.includes('USGS');
+      if (activeTab === 'CONFLICTS') return (e as any).is_conflict || e.source.includes('OCHA');
+      if (activeTab === 'DISASTERS') return (e.source.includes('GDACS') || e.source.includes('NASA') || e.source.includes('USGS')) && !e.source.includes('Open-Notify');
       return true;
     });
   }, [events, selectedCountry, activeTab]);
@@ -112,10 +112,10 @@ export default function ArgusDashboard() {
                 <div 
                   key={event.id} 
                   onClick={() => flyTo(event.coordinates[0], event.coordinates[1], 6)}
-                  className={`glass-panel-hover p-3 rounded-lg border-l-2 text-sm shadow-[0_0_15px_rgba(0,0,0,0.5)] transform transition-all cursor-pointer ${!reduceMotion ? 'hover:scale-[1.02] hover:-translate-y-1' : ''} ${i === 0 && !reduceMotion ? 'animate-slide-down neon-pulse-new' : ''} ${event.type === 'CRITICAL' ? 'border-destructive' : event.type === 'HIGH' ? 'border-orange-500' : 'border-primary'}`}
+                  className={`glass-panel-hover p-3 rounded-lg border-l-2 text-sm shadow-[0_0_15px_rgba(0,0,0,0.5)] transform transition-all cursor-pointer ${!reduceMotion ? 'hover:scale-[1.02] hover:-translate-y-1' : ''} ${i === 0 && !reduceMotion ? 'animate-slide-down neon-pulse-new' : ''} ${event.type === 'CRITICAL' ? 'border-destructive' : event.type === 'HIGH' ? 'border-orange-500' : event.type === 'ISS_TRACKER' ? 'border-white' : 'border-primary'}`}
                 >
                   <div className="flex justify-between items-start mb-2">
-                    <span className={`text-xs font-bold font-mono tracking-widest ${event.type === 'CRITICAL' ? 'text-destructive drop-shadow-[0_0_5px_rgba(255,0,0,0.8)]' : event.type === 'HIGH' ? 'text-orange-500' : 'text-primary'}`}>
+                    <span className={`text-xs font-bold font-mono tracking-widest ${event.type === 'CRITICAL' ? 'text-destructive drop-shadow-[0_0_5px_rgba(255,0,0,0.8)]' : event.type === 'HIGH' ? 'text-orange-500' : event.type === 'ISS_TRACKER' ? 'text-white' : 'text-primary'}`}>
                       {event.type}
                     </span>
                     <span className="text-[10px] text-primary/50 font-mono">{event.time}</span>

@@ -25,6 +25,7 @@ interface ArgusStore {
   showRightSidebar: boolean;
   showTicker: boolean;
   mapStyle: 'dark' | 'satellite';
+  language: 'en' | 'de';
   selectedCountry: string | null;
   viewState: {
     longitude: number;
@@ -38,6 +39,7 @@ interface ArgusStore {
   setViewState: (viewState: any) => void;
   flyTo: (longitude: number, latitude: number, zoom?: number) => void;
   setSelectedCountry: (country: string | null) => void;
+  setLanguage: (lang: 'en' | 'de') => void;
   initWorker: () => void;
   toggleHeatmap: () => void;
   toggleScatterplot: () => void;
@@ -69,6 +71,7 @@ export const useArgusStore = create<ArgusStore>()(
   showRightSidebar: true,
   showTicker: true,
   mapStyle: 'dark',
+  language: 'en',
   selectedCountry: null,
   viewState: {
     longitude: 10,
@@ -93,6 +96,7 @@ export const useArgusStore = create<ArgusStore>()(
     }));
   },
   setSelectedCountry: (country) => set({ selectedCountry: country }),
+  setLanguage: (lang) => set({ language: lang }),
   
   toggleHeatmap: () => set((state) => ({ showHeatmap: !state.showHeatmap })),
   toggleScatterplot: () => set((state) => ({ showScatterplot: !state.showScatterplot })),
@@ -178,7 +182,8 @@ export const useArgusStore = create<ArgusStore>()(
     showLeftSidebar: state.showLeftSidebar,
     showRightSidebar: state.showRightSidebar,
     showTicker: state.showTicker,
-    mapStyle: state.mapStyle
+    mapStyle: state.mapStyle,
+    language: state.language
   }),
 }
 )

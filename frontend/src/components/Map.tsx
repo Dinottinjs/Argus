@@ -121,12 +121,32 @@ export default function GlobalMap() {
       activeLayers.push(
         new HeatmapLayer({
           id: 'heatmap-layer',
-          data: events.filter(e => e.coordinates && e.coordinates.length === 2 && e.coordinates[0] !== 0),
+          data: events.filter(e => e.coordinates && e.coordinates.length === 2 && e.coordinates[0] !== 0 && e.type !== 'ISS_TRACKER'),
           getPosition: (d: any) => d.coordinates,
           getWeight: (d: any) => d.type === 'CRITICAL' ? 10 : d.type === 'HIGH' ? 5 : 1,
           radiusPixels: 40,
           intensity: 1,
           threshold: 0.1
+        })
+      );
+    }
+    
+    // ISS Tracker Layer
+    const issEvent = events.find(e => e.type === 'ISS_TRACKER');
+    if (issEvent && issEvent.coordinates) {
+      activeLayers.push(
+        new ScatterplotLayer({
+          id: 'iss-layer',
+          data: [issEvent],
+          getPosition: (d: any) => d.coordinates,
+          getFillColor: [255, 255, 255, 255],
+          getLineColor: [6, 182, 212, 255], // Cyan outline
+          stroked: true,
+          lineWidthMinPixels: 3,
+          getRadius: 400000,
+          radiusMinPixels: 10,
+          radiusMaxPixels: 30,
+          pickable: true
         })
       );
     }
