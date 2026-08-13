@@ -13,7 +13,8 @@ export default function SettingsPage() {
     reduceMotion, localOnlyMode, toggleReduceMotion, toggleLocalOnlyMode,
     showLeftSidebar, showRightSidebar, showTicker,
     toggleLeftSidebar, toggleRightSidebar, toggleTicker, resetUI,
-    language, setLanguage, theme, setTheme
+    language, setLanguage, theme, setTheme,
+    showFPS, toggleFPS
   } = useArgusStore();
   const [interfaces, setInterfaces] = useState<any[]>([]);
   const [selectedInterface, setSelectedInterface] = useState<string>("");
@@ -73,6 +74,8 @@ export default function SettingsPage() {
       reduceMotionDesc: "Disables the Bloomberg ticker scrolling and CSS pulse effects to reduce GPU load and prevent motion sickness.",
       enabled: "Enabled",
       disabled: "Disabled",
+      fpsLabel: "FPS Overlay",
+      fpsDesc: "Displays a draggable frame rate counter.",
       airGapped: "Air-Gapped / Local Only Mode",
       airGappedDesc: "Stops all external API calls (USGS, BBC, Binance). Map will only show locally generated internal telemetry data.",
       updateStatus: "Argus Version Status",
@@ -119,6 +122,8 @@ export default function SettingsPage() {
       reduceMotionDesc: "Deaktiviert den Bloomberg-Ticker und CSS-Pulseffekte, um die GPU zu entlasten und Motion Sickness zu vermeiden.",
       enabled: "Aktiviert",
       disabled: "Deaktiviert",
+      fpsLabel: "FPS-Anzeige",
+      fpsDesc: "Zeigt einen verschiebbaren Framerate-Zähler an.",
       airGapped: "Air-Gapped / Nur-Lokal Modus",
       airGappedDesc: "Stoppt alle externen API-Aufrufe. Die Karte zeigt nur lokal generierte interne Telemetriedaten.",
       updateStatus: "Argus Versions-Status",
@@ -240,7 +245,7 @@ export default function SettingsPage() {
                 className={`cursor-pointer p-4 rounded-lg border-2 transition-all duration-300 ${
                   selectedInterface === "" 
                     ? "border-primary bg-primary/20 shadow-[0_0_15px_rgba(6,182,212,0.3)]" 
-                    : "border-border bg-black/40 hover:border-primary/50"
+                    : "border-border bg-card/60 hover:border-primary/50"
                 }`}
               >
                 <div className="flex items-center gap-3 mb-2">
@@ -259,7 +264,7 @@ export default function SettingsPage() {
                   className={`cursor-pointer p-4 rounded-lg border-2 transition-all duration-300 ${
                     selectedInterface === iface.ip 
                       ? "border-primary bg-primary/20 shadow-[0_0_15px_rgba(6,182,212,0.3)]" 
-                      : "border-border bg-black/40 hover:border-primary/50"
+                      : "border-border bg-card/60 hover:border-primary/50"
                   }`}
                 >
                   <div className="flex items-center gap-3 mb-2">
@@ -289,21 +294,39 @@ export default function SettingsPage() {
             </div>
             
             <div className="space-y-6 flex-1">
-              <div className="flex items-center justify-between p-4 border border-cyan-500/20 bg-black/40 rounded-lg">
+              <div className="flex items-center justify-between p-4 border border-cyan-500/20 bg-card/60 rounded-lg">
                 <div>
                   <h3 className="font-bold text-primary">{t.themeToggle}</h3>
                   <p className="text-xs text-muted-foreground mt-1">{t.themeDesc}</p>
                 </div>
                 <Button 
-                  onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+                  onClick={() => {
+                     if (theme === 'dark') setTheme('light');
+                     else if (theme === 'light') setTheme('discord');
+                     else setTheme('dark');
+                  }}
                   variant="outline" 
                   className="border-cyan-500/30 text-primary w-24 shrink-0"
                 >
-                  {theme === 'dark' ? t.dark : t.light}
+                  {theme === 'dark' ? t.dark : theme === 'light' ? t.light : "Discord"}
                 </Button>
               </div>
 
-              <div className="flex flex-col sm:flex-row gap-4 sm:items-center justify-between p-4 border border-cyan-500/20 bg-black/40 rounded-lg">
+              <div className="flex flex-col sm:flex-row gap-4 sm:items-center justify-between p-4 border border-cyan-500/20 bg-card/60 rounded-lg">
+                <div>
+                  <h3 className="font-bold text-primary">{t.fpsLabel}</h3>
+                  <p className="text-xs text-muted-foreground mt-1">{t.fpsDesc}</p>
+                </div>
+                <Button 
+                  onClick={toggleFPS}
+                  variant={showFPS ? "default" : "outline"} 
+                  className={`shrink-0 ${showFPS ? "bg-primary text-black font-bold" : "border-cyan-500/30 text-primary"}`}
+                >
+                  {showFPS ? t.enabled : t.disabled}
+                </Button>
+              </div>
+
+              <div className="flex flex-col sm:flex-row gap-4 sm:items-center justify-between p-4 border border-cyan-500/20 bg-card/60 rounded-lg">
                 <div>
                   <h3 className="font-bold text-primary">{t.reduceMotion}</h3>
                   <p className="text-xs text-muted-foreground mt-1">{t.reduceMotionDesc}</p>
@@ -317,7 +340,7 @@ export default function SettingsPage() {
                 </Button>
               </div>
 
-              <div className="flex flex-col sm:flex-row gap-4 sm:items-center justify-between p-4 border border-cyan-500/20 bg-black/40 rounded-lg">
+              <div className="flex flex-col sm:flex-row gap-4 sm:items-center justify-between p-4 border border-cyan-500/20 bg-card/60 rounded-lg">
                 <div>
                   <h3 className="font-bold text-primary">{t.airGapped}</h3>
                   <p className="text-xs text-muted-foreground mt-1">{t.airGappedDesc}</p>
@@ -344,7 +367,7 @@ export default function SettingsPage() {
             </p>
             
             <div className="flex flex-col gap-4">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between p-4 bg-black/40 border border-cyan-500/20 rounded-md gap-4">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between p-4 bg-card/60 border border-cyan-500/20 rounded-md gap-4">
                 <div className="flex items-center gap-3">
                   {updateAvailable ? (
                     <DownloadCloud className="text-orange-500 h-6 w-6 animate-pulse" />
@@ -379,7 +402,7 @@ export default function SettingsPage() {
               </div>
               
               {updateAvailable && updatePreview && (
-                <div className="p-4 bg-black/60 border border-orange-500/30 rounded-md">
+                <div className="p-4 bg-card/80 border border-orange-500/30 rounded-md">
                    <h3 className="text-orange-500 font-mono text-xs mb-2">UPDATE PREVIEW (CHANGELOG)</h3>
                    <pre className="text-slate-300 font-mono text-xs whitespace-pre-wrap">{updatePreview}</pre>
                 </div>

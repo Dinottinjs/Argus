@@ -128,6 +128,40 @@
   --sidebar-ring: oklch(0.8 0.2 200);
 }
 
+.discord {
+  --background: oklch(0.3 0.01 260); /* Discord grey background: #36393f -> roughly this oklch */
+  --foreground: oklch(0.9 0 0); /* #dcddde */
+  --card: oklch(0.25 0.01 260); /* #2f3136 */
+  --card-foreground: oklch(0.9 0 0);
+  --popover: oklch(0.25 0.01 260);
+  --popover-foreground: oklch(0.9 0 0);
+  --primary: oklch(0.5 0.2 265); /* Discord Blurple: #5865F2 */
+  --primary-foreground: oklch(0.98 0 0); /* white */
+  --secondary: oklch(0.4 0.01 260); /* #4f545c */
+  --secondary-foreground: oklch(0.9 0 0);
+  --muted: oklch(0.35 0.01 260); /* #40444b */
+  --muted-foreground: oklch(0.7 0 0); /* #b9bbbe */
+  --accent: oklch(0.4 0.01 260);
+  --accent-foreground: oklch(0.9 0 0);
+  --destructive: oklch(0.6 0.2 25); /* Discord Red: #ed4245 */
+  --border: oklch(0.2 0.01 260); /* #202225 */
+  --input: oklch(0.2 0.01 260);
+  --ring: oklch(0.5 0.2 265); /* Blurple */
+  --chart-1: oklch(0.5 0.2 265);
+  --chart-2: oklch(0.6 0.15 150); /* #3ba55d green */
+  --chart-3: oklch(0.7 0.15 70); /* #faa61a yellow */
+  --chart-4: oklch(0.6 0.2 25); /* #ed4245 red */
+  --chart-5: oklch(0.6 0.2 330); /* #eb459e pink */
+  --sidebar: oklch(0.25 0.01 260);
+  --sidebar-foreground: oklch(0.9 0 0);
+  --sidebar-primary: oklch(0.5 0.2 265);
+  --sidebar-primary-foreground: oklch(0.98 0 0);
+  --sidebar-accent: oklch(0.35 0.01 260);
+  --sidebar-accent-foreground: oklch(0.9 0 0);
+  --sidebar-border: oklch(0.2 0.01 260);
+  --sidebar-ring: oklch(0.5 0.2 265);
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;

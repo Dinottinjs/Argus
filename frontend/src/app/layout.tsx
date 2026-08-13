@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Orbitron, Geist_Mono } from "next/font/google";
+import DraggableFPS from "@/components/DraggableFPS";
 import "./globals.css";
 
 const orbitron = Orbitron({
@@ -24,7 +25,8 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className="dark">
-      <body className={`${orbitron.variable} ${geistMono.variable} font-orbitron min-h-full flex flex-col antialiased`}>
+      <body className={`${orbitron.variable} ${geistMono.variable} font-orbitron min-h-full flex flex-col antialiased relative`}>
+        <DraggableFPS />
         {children}
       </body>
     </html>

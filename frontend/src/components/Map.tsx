@@ -150,7 +150,6 @@ export default function GlobalMap() {
           getTargetColor: [255, 50, 50, 255], // Red destination
           getWidth: 5,
           getHeight: 0.5,
-          greatCircle: true,
           pickable: true
         })
       );

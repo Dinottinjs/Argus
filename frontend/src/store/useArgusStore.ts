@@ -37,7 +37,8 @@ interface ArgusStore {
   showTicker: boolean;
   mapStyle: 'dark' | 'satellite';
   language: 'en' | 'de';
-  theme: 'dark' | 'light';
+  theme: 'dark' | 'light' | 'discord';
+  showFPS: boolean;
   selectedCountry: any | null;
   viewState: {
     longitude: number;
@@ -54,7 +55,8 @@ interface ArgusStore {
   flyTo: (longitude: number, latitude: number, zoom?: number) => void;
   setSelectedCountry: (country: any | null) => void;
   setLanguage: (lang: 'en' | 'de') => void;
-  setTheme: (theme: 'dark' | 'light') => void;
+  setTheme: (theme: 'dark' | 'light' | 'discord') => void;
+  toggleFPS: () => void;
   initWorker: () => void;
   toggleHeatmap: () => void;
   toggleScatterplot: () => void;
@@ -91,6 +93,7 @@ export const useArgusStore = create<ArgusStore>()(
   mapStyle: 'dark',
   language: 'en',
   theme: 'dark',
+  showFPS: false,
   selectedCountry: null,
   viewState: {
     longitude: 10,
@@ -121,12 +124,17 @@ export const useArgusStore = create<ArgusStore>()(
     if (typeof document !== 'undefined') {
       if (theme === 'dark') {
         document.documentElement.classList.add('dark');
-      } else {
+        document.documentElement.classList.remove('discord');
+      } else if (theme === 'discord') {
+        document.documentElement.classList.add('discord');
         document.documentElement.classList.remove('dark');
+      } else {
+        document.documentElement.classList.remove('dark', 'discord');
       }
     }
   },
   
+  toggleFPS: () => set((state) => ({ showFPS: !state.showFPS })),
   toggleHeatmap: () => set((state) => ({ showHeatmap: !state.showHeatmap })),
   toggleScatterplot: () => set((state) => ({ showScatterplot: !state.showScatterplot })),
   togglePause: () => set((state) => ({ isPaused: !state.isPaused })),
@@ -156,6 +164,7 @@ export const useArgusStore = create<ArgusStore>()(
     mapStyle: 'dark',
     language: 'en',
     theme: 'dark',
+    showFPS: false,
     isPaused: false
   }),
   
@@ -164,8 +173,12 @@ export const useArgusStore = create<ArgusStore>()(
     if (typeof document !== 'undefined') {
       if (state.theme === 'dark') {
         document.documentElement.classList.add('dark');
-      } else {
+        document.documentElement.classList.remove('discord');
+      } else if (state.theme === 'discord') {
+        document.documentElement.classList.add('discord');
         document.documentElement.classList.remove('dark');
+      } else {
+        document.documentElement.classList.remove('dark', 'discord');
       }
     }
     if (state.worker) return;
@@ -227,7 +240,9 @@ export const useArgusStore = create<ArgusStore>()(
     showRightSidebar: state.showRightSidebar,
     showTicker: state.showTicker,
     mapStyle: state.mapStyle,
-    language: state.language
+    language: state.language,
+    theme: state.theme,
+    showFPS: state.showFPS
   }),
 }
 )

@@ -176,7 +176,7 @@ export default function ArgusDashboard() {
           <Input 
             type="text" 
             placeholder={t.search} 
-            className="w-full bg-black/40 pl-10 border-cyan-500/30 focus-visible:ring-primary focus-visible:border-primary transition-all shadow-[inset_0_0_10px_rgba(0,0,0,0.5)]"
+            className="w-full bg-card/60 pl-10 border-cyan-500/30 focus-visible:ring-primary focus-visible:border-primary transition-all shadow-[inset_0_0_10px_rgba(0,0,0,0.2)]"
           />
         </div>
         
@@ -201,7 +201,7 @@ export default function ArgusDashboard() {
         {/* LEFT SIDEBAR - TICKER */}
         {showLeftSidebar && (
         <aside className="w-full md:w-64 lg:w-80 h-[30vh] md:h-auto glass-panel flex flex-col z-10 m-0 md:m-4 md:mr-0 rounded-none md:rounded-xl border-t md:border-l transition-all duration-300 ease-in-out">
-          <div className="p-4 border-b border-cyan-500/20 flex flex-col gap-3 bg-black/40 md:rounded-t-xl relative overflow-hidden backdrop-blur-md">
+          <div className="p-4 border-b border-cyan-500/20 flex flex-col gap-3 bg-card/60 md:rounded-t-xl relative overflow-hidden backdrop-blur-md">
             <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-primary to-transparent opacity-50" />
             <div className="flex items-center gap-2">
               <Activity className="h-4 w-4 text-primary animate-pulse-glow" />
@@ -237,7 +237,7 @@ export default function ArgusDashboard() {
                     </span>
                     <span className="text-[10px] text-primary/50 font-mono">{event.time}</span>
                   </div>
-                  <p className="text-white/90 text-xs font-medium leading-relaxed drop-shadow-md">{event.title}</p>
+                  <p className="text-foreground/90 text-xs font-medium leading-relaxed drop-shadow-md">{event.title}</p>
                   <div className="mt-2 text-[10px] text-primary/40 flex justify-between font-mono items-center">
                     <span className={`px-1 py-0.5 rounded-sm ${event.source.includes('NASA') ? 'bg-blue-900/40 text-blue-400 border border-blue-500/30' : event.source.includes('UN') ? 'bg-indigo-900/40 text-indigo-400 border border-indigo-500/30' : 'bg-slate-800/40'}`}>
                       {t.src} {event.source}
@@ -257,12 +257,12 @@ export default function ArgusDashboard() {
           
           {/* Sidebar Toggles */}
           <div className="absolute top-1/2 left-0 -translate-y-1/2 z-20">
-            <Button variant="ghost" size="icon" onClick={toggleLeftSidebar} className="bg-black/60 border border-cyan-500/30 rounded-l-none rounded-r-md text-primary hover:bg-primary/20 transition-all">
+            <Button variant="ghost" size="icon" onClick={toggleLeftSidebar} className="bg-card/80 border border-cyan-500/30 rounded-l-none rounded-r-md text-primary hover:bg-primary/20 transition-all">
               {showLeftSidebar ? <ChevronLeft className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
             </Button>
           </div>
           <div className="absolute top-1/2 right-0 -translate-y-1/2 z-20">
-            <Button variant="ghost" size="icon" onClick={toggleRightSidebar} className="bg-black/60 border border-cyan-500/30 rounded-r-none rounded-l-md text-primary hover:bg-primary/20 transition-all">
+            <Button variant="ghost" size="icon" onClick={toggleRightSidebar} className="bg-card/80 border border-cyan-500/30 rounded-r-none rounded-l-md text-primary hover:bg-primary/20 transition-all">
               {showRightSidebar ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
             </Button>
           </div>
@@ -273,7 +273,7 @@ export default function ArgusDashboard() {
               variant="secondary" 
               size="sm" 
               onClick={toggleScatterplot}
-              className={`glass-panel-hover transition-all ${showScatterplot ? 'bg-primary/20 text-primary border-primary shadow-[0_0_15px_rgba(6,182,212,0.4)]' : 'bg-black/60 text-slate-400 border-cyan-500/30'}`}
+              className={`glass-panel-hover transition-all ${showScatterplot ? 'bg-primary/20 text-primary border-primary shadow-[0_0_15px_rgba(6,182,212,0.4)]' : 'bg-card/80 text-slate-400 border-cyan-500/30'}`}
             >
               <Globe2 className="h-4 w-4 mr-2" /> {t.topography}
             </Button>
@@ -281,7 +281,7 @@ export default function ArgusDashboard() {
               variant="secondary" 
               size="sm" 
               onClick={toggleHeatmap}
-              className={`glass-panel-hover transition-all ${showHeatmap ? 'bg-orange-500/20 text-orange-400 border-orange-500 shadow-[0_0_15px_rgba(249,115,22,0.4)]' : 'bg-black/60 text-slate-400 border-cyan-500/30'}`}
+              className={`glass-panel-hover transition-all ${showHeatmap ? 'bg-orange-500/20 text-orange-400 border-orange-500 shadow-[0_0_15px_rgba(249,115,22,0.4)]' : 'bg-card/80 text-slate-400 border-cyan-500/30'}`}
             >
               <AlertTriangle className="h-4 w-4 mr-2" /> {t.heatmap}
             </Button>
@@ -292,7 +292,7 @@ export default function ArgusDashboard() {
               variant="secondary" 
               size="sm" 
               onClick={togglePause}
-              className={`glass-panel-hover transition-all ${isPaused ? 'bg-yellow-500/20 text-yellow-500 border-yellow-500 shadow-[0_0_15px_rgba(234,179,8,0.4)]' : 'bg-black/60 text-slate-400 border-cyan-500/30'}`}
+              className={`glass-panel-hover transition-all ${isPaused ? 'bg-yellow-500/20 text-yellow-500 border-yellow-500 shadow-[0_0_15px_rgba(234,179,8,0.4)]' : 'bg-card/80 text-slate-400 border-cyan-500/30'}`}
             >
               <ShieldAlert className="h-4 w-4 mr-2" /> {isPaused ? t.resumeFeed : t.pauseFeed}
             </Button>
@@ -300,7 +300,7 @@ export default function ArgusDashboard() {
               variant="secondary" 
               size="sm" 
               onClick={clearEvents}
-              className="glass-panel-hover bg-black/60 text-red-400 border-red-500/50 hover:bg-red-500/20 transition-all"
+              className="glass-panel-hover bg-card/80 text-red-400 border-red-500/50 hover:bg-red-500/20 transition-all"
             >
               <Search className="h-4 w-4 mr-2" /> {t.clearData}
             </Button>
@@ -368,11 +368,11 @@ export default function ArgusDashboard() {
           <div className="mt-auto mb-2 shrink-0">
             <h2 className="text-sm font-semibold uppercase tracking-wider text-primary neon-text mb-4">{t.telemetry}</h2>
             <div className="grid grid-cols-2 gap-2 text-xs font-mono">
-                <div className="p-2 bg-black/40 rounded border border-cyan-500/10 text-center">
+                <div className="p-2 bg-card/60 rounded border border-cyan-500/10 text-center">
                     <div className="text-primary/50 mb-1">{t.processed}</div>
                     <div className="text-primary">{events.length} {t.nodes}</div>
                 </div>
-                <div className="p-2 bg-black/40 rounded border border-cyan-500/10 text-center">
+                <div className="p-2 bg-card/60 rounded border border-cyan-500/10 text-center">
                     <div className="text-primary/50 mb-1">{t.latency}</div>
                     <div className="text-primary">{(stats?.sentiment ? Math.random() * 15 + 10 : 0).toFixed(1)} ms</div>
                 </div>
@@ -383,7 +383,7 @@ export default function ArgusDashboard() {
       </div>
 
       {showTicker && (
-      <div className="h-8 w-full bg-black/90 border-t border-cyan-500/30 flex items-center overflow-hidden whitespace-nowrap shrink-0 shadow-[0_-5px_15px_rgba(0,0,0,0.8)] z-50 transition-all duration-300 ease-in-out relative">
+      <div className="h-8 w-full bg-card/90 border-t border-cyan-500/30 flex items-center overflow-hidden whitespace-nowrap shrink-0 shadow-[0_-5px_15px_rgba(0,0,0,0.8)] z-50 transition-all duration-300 ease-in-out relative">
         <div className="bg-black text-primary font-bold px-4 py-1 text-xs uppercase tracking-widest border-r border-cyan-500/50 z-20 shrink-0 h-full flex items-center shadow-[5px_0_10px_rgba(0,0,0,0.5)] absolute left-0 top-0">
           <div className="absolute inset-0 bg-primary/10 pointer-events-none"></div>
           <span className="relative z-10">{t.ticker}</span>
@@ -397,7 +397,7 @@ export default function ArgusDashboard() {
               <span className="text-green-400 font-mono text-xs font-bold">ETH/USDT ${stats?.eth_price?.toLocaleString() || "---"} ▲</span>
               <span className="text-primary/50 font-mono text-xs">|</span>
               {events.filter(e => e.type !== 'NETWORK_LINK').slice(0, 10).map((event, idx) => (
-                <span key={`ticker-${loopId}-${event.id}-${idx}`} className="text-xs font-mono text-slate-300 flex-shrink-0">
+                <span key={`ticker-${loopId}-${event.id}-${idx}`} className="text-xs font-mono text-foreground/70 flex-shrink-0">
                   <span className={event.type === 'CRITICAL' ? 'text-destructive' : event.type === 'HIGH' ? 'text-orange-500' : 'text-primary'}>[{event.type === 'CRITICAL' ? t.critical : event.type === 'HIGH' ? t.high : event.type}]</span> {event.title}
                   <span className="text-primary/50 ml-8">|</span>
                 </span>
