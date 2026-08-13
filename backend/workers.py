@@ -193,7 +193,7 @@ async def conflict_worker(r: redis.Redis, active_interface: str = ""):
                             "type": "CRITICAL",
                             "title": item.get("cLabel", {}).get("value", "Unknown Conflict"),
                             "coordinates": [lon, lat],
-                            "time": item.get("countryLabel", {}).get("value", ""),
+                            "time": item.get("start", {}).get("value", "").split("T")[0],
                             "timestamp": int(time.time() * 1000),
                             "id": f"WIKI-{conflict_id}",
                             "source": "UN OCHA ReliefWeb / Wikidata",
@@ -301,6 +301,50 @@ async def news_worker(r: redis.Redis, active_interface: str = ""):
             
         await asyncio.sleep(60) # Update every minute
 
+async def network_worker(r: redis.Redis, active_interface: str = ""):
+    print("Started Global Backbone Network Worker")
+    import random
+    
+    # Major Internet Backbone Hubs
+    hubs = [
+        {"name": "Ashburn, USA", "coord": [-77.4874, 39.0438]},
+        {"name": "Frankfurt, DE", "coord": [8.6821, 50.1109]},
+        {"name": "London, UK", "coord": [-0.1278, 51.5074]},
+        {"name": "Tokyo, JP", "coord": [139.6917, 35.6895]},
+        {"name": "Singapore, SG", "coord": [103.8198, 1.3521]},
+        {"name": "Sydney, AU", "coord": [151.2093, -33.8688]},
+        {"name": "Sao Paulo, BR", "coord": [-46.6333, -23.5505]},
+        {"name": "San Jose, USA", "coord": [-121.8863, 37.3382]}
+    ]
+    
+    while True:
+        try:
+            # Simulate 1-3 network connections (attacks, spikes, transfers)
+            num_events = random.randint(1, 3)
+            for _ in range(num_events):
+                source = random.choice(hubs)
+                target = random.choice(hubs)
+                while target == source:
+                    target = random.choice(hubs)
+                
+                event = {
+                    "type": "NETWORK_LINK",
+                    "title": f"DDoS/High Traffic Anomaly: {source['name']} -> {target['name']}",
+                    "coordinates": source['coord'],
+                    "target_coordinates": target['coord'],
+                    "timestamp": int(time.time() * 1000),
+                    "id": f"net_{uuid.uuid4().hex[:8]}",
+                    "source": "BGP Backbone Monitors"
+                }
+                
+                payload = orjson.dumps({"type": "NEW_EVENT", "data": event})
+                await r.publish("argus_live_events", payload)
+        except Exception as e:
+            print(f"Network Worker Error: {e}")
+            
+        # Burst every 1-3 seconds
+        await asyncio.sleep(random.uniform(1.0, 3.0))
+
 async def start_workers():
     r = await redis.from_url(REDIS_URL)
     # Could dynamically read interface from Redis config if needed
@@ -313,7 +357,8 @@ async def start_workers():
         conflict_worker(r, active_interface),
         market_worker(r, active_interface),
         iss_worker(r, active_interface),
-        news_worker(r, active_interface)
+        news_worker(r, active_interface),
+        network_worker(r, active_interface)
     )
 
 if __name__ == "__main__":

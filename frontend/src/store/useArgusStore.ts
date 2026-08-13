@@ -7,8 +7,10 @@ interface ArgusEvent {
   title: string;
   time: string;
   coordinates: [number, number];
+  target_coordinates?: [number, number];
   source: string;
   is_conflict?: boolean;
+  timestamp?: number;
 }
 
 export interface NewsStats {
@@ -65,6 +67,7 @@ interface ArgusStore {
   toggleMapStyle: () => void;
   clearEvents: () => void;
   resetUI: () => void;
+  reconnect: () => void;
 }
 
 export const useArgusStore = create<ArgusStore>()(
@@ -101,7 +104,6 @@ export const useArgusStore = create<ArgusStore>()(
   
   setViewState: (viewState) => set({ viewState }),
   flyTo: (longitude, latitude, zoom = 4) => {
-    // Requires importing FlyToInterpolator where it's used, but we can pass a dummy string to be parsed or use MapGL's native flyTo if we use react-map-gl
     set((state) => ({
       viewState: {
         ...state.viewState,
@@ -109,7 +111,6 @@ export const useArgusStore = create<ArgusStore>()(
         latitude,
         zoom,
         transitionDuration: 2000,
-        // We will handle the interpolator in Map.tsx
       }
     }));
   },
@@ -137,6 +138,13 @@ export const useArgusStore = create<ArgusStore>()(
   toggleMapStyle: () => set((state) => ({ mapStyle: state.mapStyle === 'dark' ? 'satellite' : 'dark' })),
   clearEvents: () => set({ events: [], binaryPositions: null }),
   
+  reconnect: () => {
+    set({ events: [], status: 'CONNECTING...' });
+    if (get().worker) {
+        get().worker?.postMessage({ type: 'RECONNECT' });
+    }
+  },
+  
   resetUI: () => set({ 
     showHeatmap: true, 
     showScatterplot: true, 
@@ -153,7 +161,6 @@ export const useArgusStore = create<ArgusStore>()(
   
   initWorker: () => {
     const state = get();
-    // Apply persisted theme on mount
     if (typeof document !== 'undefined') {
       if (state.theme === 'dark') {
         document.documentElement.classList.add('dark');
@@ -161,9 +168,8 @@ export const useArgusStore = create<ArgusStore>()(
         document.documentElement.classList.remove('dark');
       }
     }
-    if (state.worker) return; // already initialized
+    if (state.worker) return;
     
-    // Only run on client
     if (typeof window === 'undefined') return;
     
     const worker = new Worker(new URL('../workers/data.worker.ts', import.meta.url));
@@ -178,24 +184,21 @@ export const useArgusStore = create<ArgusStore>()(
           set({ newsStats });
         } else if (type === 'BATCH_EVENTS') {
             set((state) => {
-                if (state.isPaused) return state; // Do not accept new events if paused
+                if (state.isPaused) return state;
                 
                 let incomingEvents = events;
                 if (state.localOnlyMode) {
                    incomingEvents = incomingEvents.filter((e: any) => e.source !== 'USGS' && e.source !== 'BBC News' && e.source !== 'Binance');
                 }
                 
-                // Merge old events with new batch
-                const merged = [...incomingEvents, ...state.events].slice(0, 100); // UI holds up to 100 in memory (Memory Leak Fix)
+                const merged = [...incomingEvents, ...state.events].slice(0, 1000);
                 
-                // Also merge binary positions for DeckGL
                 let newPositions = binaryData.positions;
                 if (state.binaryPositions && newPositions) {
                     const combined = new Float32Array(state.binaryPositions.length + newPositions.length);
                     combined.set(newPositions, 0);
                     combined.set(state.binaryPositions, newPositions.length);
-                    // Keep up to 500 points (1000 floats) to prevent WebGL crashes
-                    newPositions = combined.length > 1000 ? combined.slice(0, 1000) : combined;
+                    newPositions = combined.length > 3000 ? combined.slice(0, 3000) : combined;
                 } else if (state.binaryPositions && !newPositions) {
                     newPositions = state.binaryPositions;
                 }
@@ -210,7 +213,7 @@ export const useArgusStore = create<ArgusStore>()(
     
     worker.postMessage({ type: 'CONNECT', payload: { url: wsUrl } });
     
-    set({ worker });
+    set({ worker, status: 'CONNECTING...' });
   }
 }),
 {

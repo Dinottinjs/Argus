@@ -1,17 +1,34 @@
 // data.worker.ts
 // Web Worker for processing high-volume Argus events without blocking the main UI thread
 
+let wsUrl = '';
+let isManualReconnect = false;
+
 self.onmessage = (e) => {
   const { type, payload } = e.data;
   
   if (type === 'CONNECT') {
-    connectWebSocket(payload.url);
+    wsUrl = payload.url;
+    connectWebSocket(wsUrl);
+  } else if (type === 'RECONNECT') {
+    eventCache = [];
+    pendingEvents = [];
+    if (ws) {
+        isManualReconnect = true;
+        ws.close();
+    } else {
+        self.postMessage({ type: 'STATUS', status: 'CONNECTING...' });
+        if (wsUrl) {
+            setTimeout(() => connectWebSocket(wsUrl), 500);
+        }
+    }
   }
 };
 
 let ws: WebSocket;
 let reconnectTimer: any;
 let eventCache: any[] = [];
+let pendingEvents: any[] = [];
 const MAX_EVENTS = 5000;
 
 function connectWebSocket(url: string) {
@@ -24,8 +41,14 @@ function connectWebSocket(url: string) {
   };
   
   ws.onclose = () => {
-    self.postMessage({ type: 'STATUS', status: 'OFFLINE' });
-    reconnectTimer = setTimeout(() => connectWebSocket(url), 3000);
+    if (isManualReconnect) {
+        isManualReconnect = false;
+        self.postMessage({ type: 'STATUS', status: 'CONNECTING...' });
+        reconnectTimer = setTimeout(() => connectWebSocket(url), 500);
+    } else {
+        self.postMessage({ type: 'STATUS', status: 'OFFLINE' });
+        reconnectTimer = setTimeout(() => connectWebSocket(url), 3000);
+    }
   };
   
   // Set binaryType to 'arraybuffer' to receive zero-copy bytes from FastAPI!
@@ -53,9 +76,11 @@ function connectWebSocket(url: string) {
           title: data.title,
           time: eventTime,
           coordinates: data.coordinates,
+          target_coordinates: data.target_coordinates,
           source: data.source,
           is_conflict: data.is_conflict,
-          country: data.country
+          country: data.country,
+          timestamp: data.timestamp
         };
         
         // Deduplicate

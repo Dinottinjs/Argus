@@ -1,7 +1,7 @@
 "use client";
 import React from 'react';
 import DeckGL from '@deck.gl/react';
-import { ScatterplotLayer, GeoJsonLayer } from '@deck.gl/layers';
+import { ScatterplotLayer, GeoJsonLayer, ArcLayer } from '@deck.gl/layers';
 import { HeatmapLayer } from '@deck.gl/aggregation-layers';
 import { Map as MapGL } from 'react-map-gl/maplibre';
 import { FlyToInterpolator, MapView } from '@deck.gl/core';
@@ -152,6 +152,25 @@ export default function GlobalMap() {
           getRadius: 400000,
           radiusMinPixels: 10,
           radiusMaxPixels: 30,
+          pickable: true
+        })
+      );
+    }
+    // Network / Cyber Arcs (Show only very recent events to simulate bursts)
+    const now = Date.now();
+    const networkEvents = events.filter(e => e.type === 'NETWORK_LINK' && e.coordinates && e.target_coordinates && e.timestamp && (now - e.timestamp < 5000));
+    
+    if (networkEvents.length > 0) {
+      activeLayers.push(
+        new ArcLayer({
+          id: 'network-arcs-layer',
+          data: networkEvents,
+          getSourcePosition: (d: any) => d.coordinates,
+          getTargetPosition: (d: any) => d.target_coordinates,
+          getSourceColor: [6, 182, 212, 255], // Cyan origin
+          getTargetColor: [255, 50, 50, 255], // Red destination
+          getWidth: 3,
+          greatCircle: true,
           pickable: true
         })
       );

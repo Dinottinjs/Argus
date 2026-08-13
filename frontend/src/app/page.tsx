@@ -2,7 +2,7 @@
 
 import React, { useEffect } from "react";
 import dynamic from "next/dynamic";
-import { Search, Activity, Globe2, AlertTriangle, ShieldAlert } from "lucide-react";
+import { Search, Activity, Globe2, AlertTriangle, ShieldAlert, ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -23,9 +23,9 @@ export default function ArgusDashboard() {
     mapStyle,
     selectedCountry, setSelectedCountry, flyTo,
     toggleHeatmap, toggleScatterplot, 
-    togglePause, clearEvents,
+    togglePause, clearEvents, reconnect,
     toggleMapStyle,
-    initWorker,
+    initWorker, toggleLeftSidebar, toggleRightSidebar,
     language
   } = useArgusStore();
 
@@ -160,8 +160,8 @@ export default function ArgusDashboard() {
             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-muted-foreground"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"></path><circle cx="12" cy="12" r="3"></circle></svg>
           </Button>
           <div className="flex items-center gap-2">
-            <div className={`w-2 h-2 rounded-full ${status === 'ONLINE' ? 'bg-primary animate-pulse-glow shadow-[0_0_8px_rgba(6,182,212,0.8)]' : status === 'CONNECTING' ? 'bg-yellow-500 animate-pulse' : 'bg-destructive shadow-[0_0_8px_rgba(255,0,0,0.8)]'}`} />
-            <Badge variant="outline" className={`border ${status === 'ONLINE' ? 'text-primary border-primary bg-primary/10 neon-border' : status === 'CONNECTING' ? 'text-yellow-500 border-yellow-500 bg-yellow-500/10' : 'text-destructive border-destructive bg-destructive/10'}`}>
+            <div className={`w-2 h-2 rounded-full ${status === 'ONLINE' ? 'bg-primary animate-pulse-glow shadow-[0_0_8px_rgba(6,182,212,0.8)]' : status === 'CONNECTING...' ? 'bg-orange-500 animate-pulse shadow-[0_0_8px_rgba(255,165,0,0.8)]' : 'bg-destructive shadow-[0_0_8px_rgba(255,0,0,0.8)]'}`} />
+            <Badge variant="outline" className={`border ${status === 'ONLINE' ? 'text-primary border-primary bg-primary/10 neon-border' : status === 'CONNECTING...' ? 'text-orange-500 border-orange-500 bg-orange-500/10' : 'text-destructive border-destructive bg-destructive/10'}`}>
               {t.system} {status}
             </Badge>
           </div>
@@ -226,8 +226,20 @@ export default function ArgusDashboard() {
         )}
 
         {/* CENTER - 3D MAP */}
-        <main className="flex-1 relative bg-transparent md:rounded-xl m-0 md:m-4 md:ml-4 lg:ml-4 overflow-hidden border-y md:border border-cyan-500/20 shadow-[0_0_30px_rgba(6,182,212,0.1)]">
+        <main className="flex-1 relative bg-transparent md:rounded-xl m-0 md:m-4 overflow-hidden border-y md:border border-cyan-500/20 shadow-[0_0_30px_rgba(6,182,212,0.1)]">
           <GlobalMap />
+          
+          {/* Sidebar Toggles */}
+          <div className="absolute top-1/2 left-0 -translate-y-1/2 z-20">
+            <Button variant="ghost" size="icon" onClick={toggleLeftSidebar} className="bg-black/60 border border-cyan-500/30 rounded-l-none rounded-r-md text-primary hover:bg-primary/20 transition-all">
+              {showLeftSidebar ? <ChevronLeft className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+            </Button>
+          </div>
+          <div className="absolute top-1/2 right-0 -translate-y-1/2 z-20">
+            <Button variant="ghost" size="icon" onClick={toggleRightSidebar} className="bg-black/60 border border-cyan-500/30 rounded-r-none rounded-l-md text-primary hover:bg-primary/20 transition-all">
+              {showRightSidebar ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
+            </Button>
+          </div>
           
           {/* Overlay UI on map */}
           <div className="absolute bottom-6 left-6 z-20 flex flex-wrap gap-2">
@@ -294,11 +306,11 @@ export default function ArgusDashboard() {
             </div>
           </div>
           
-          <div className="mb-6 shrink-0">
-            <h2 className="text-sm font-semibold uppercase tracking-wider text-primary neon-text mb-4">{t.breakingNews}</h2>
+          <div className="mb-6 shrink-1 flex-1 flex flex-col min-h-0">
+            <h2 className="text-sm font-semibold uppercase tracking-wider text-primary neon-text mb-4 shrink-0">{t.breakingNews}</h2>
             {newsStats ? (
-              <div className="space-y-3">
-                <div className="glass-panel-hover p-3 rounded-lg border border-cyan-500/10">
+              <div className="flex flex-col flex-1 min-h-0">
+                <div className="glass-panel-hover p-3 rounded-lg border border-cyan-500/10 shrink-0">
                   <div className="flex justify-between items-center mb-2">
                      <span className="font-mono text-primary/70 text-xs">VOLUME (LIVE)</span>
                      <span className="font-mono text-primary text-sm font-bold shadow-[0_0_10px_rgba(6,182,212,0.2)]">{newsStats.volume}</span>
@@ -307,11 +319,11 @@ export default function ArgusDashboard() {
                      <div className="h-full bg-primary shadow-[0_0_10px_rgba(6,182,212,0.8)] transition-all duration-1000 animate-pulse" style={{ width: `${Math.min(100, newsStats.volume * 5)}%` }}></div>
                   </div>
                 </div>
-                <div className="flex flex-col gap-2 mt-2">
-                  {newsStats.headlines.slice(0, 3).map((item, idx) => (
-                    <a key={idx} href={item.link} target="_blank" rel="noopener noreferrer" className="block text-[10px] font-mono text-slate-300 hover:text-primary transition-colors border-l-2 border-primary/50 pl-2 bg-black/20 py-1">
+                <div className="flex flex-col gap-2 mt-2 overflow-y-auto no-scrollbar flex-1 pb-4">
+                  {newsStats.headlines.map((item, idx) => (
+                    <a key={idx} href={item.link} target="_blank" rel="noopener noreferrer" className="block text-[10px] font-mono text-destructive drop-shadow-[0_0_5px_rgba(239,68,68,0.8)] hover:text-red-400 transition-colors border-l-2 border-red-500/50 pl-2 bg-black/20 py-2">
                       <span className="text-primary/70 block mb-0.5">{item.time.split(' ').slice(0, 4).join(' ')}</span>
-                      <span className="truncate block w-full">{item.title}</span>
+                      <span className="block w-full leading-relaxed">{item.title}</span>
                     </a>
                   ))}
                 </div>
@@ -358,10 +370,11 @@ export default function ArgusDashboard() {
           <div className="absolute inset-0 bg-primary/10 pointer-events-none"></div>
           <span className="relative z-10">{t.ticker}</span>
         </div>
-        <div className={`flex-1 flex overflow-hidden w-full ${!reduceMotion ? 'animate-marquee' : ''}`} style={{ paddingLeft: '150px' }}>
+        <div className={`flex w-max ${!reduceMotion ? 'animate-marquee' : ''}`} style={{ paddingLeft: '150px' }}>
           {/* Ticker Content Duplicated for seamless looping */}
           {[1, 2].map((loopId) => (
-            <div key={loopId} className="flex items-center gap-8 pl-8 shrink-0 min-w-full">
+            <div key={loopId} className="flex items-center gap-8 pl-8 shrink-0">
+              <span className="text-destructive font-bold drop-shadow-[0_0_8px_rgba(239,68,68,1)] text-xs tracking-widest uppercase">BREAKING NEWS:</span>
               <span className="text-green-400 font-mono text-xs font-bold">BTC/USDT ${stats?.btc_price?.toLocaleString() || "---"} ▲</span>
               <span className="text-green-400 font-mono text-xs font-bold">ETH/USDT ${stats?.eth_price?.toLocaleString() || "---"} ▲</span>
               <span className="text-primary/50 font-mono text-xs">|</span>

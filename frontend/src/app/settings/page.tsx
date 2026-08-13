@@ -358,62 +358,7 @@ export default function SettingsPage() {
             </div>
           </section>
           
-          {/* Layout Customization */}
-          <section className="p-6 border border-border bg-card/50 rounded-lg flex flex-col">
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center gap-3">
-                <svg xmlns="http://www.w3.org/2000/svg" className="text-primary h-6 w-6" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M3 9h18"/><path d="M9 21V9"/></svg>
-                <h2 className="text-lg font-bold uppercase tracking-wider text-muted-foreground">{t.layoutCust}</h2>
-              </div>
-              <Button onClick={() => { resetUI(); alert(t.alertReset); }} variant="outline" className="border-primary/50 text-primary hover:bg-primary/20">
-                {t.resetUi}
-              </Button>
-            </div>
-            
-            <div className="space-y-6">
-              <div className="flex items-center justify-between p-4 border border-cyan-500/20 bg-black/40 rounded-lg">
-                <div>
-                  <h3 className="font-bold text-primary">{t.liveFeed}</h3>
-                  <p className="text-xs text-muted-foreground mt-1">{t.liveFeedDesc}</p>
-                </div>
-                <Button 
-                  onClick={toggleLeftSidebar}
-                  variant={showLeftSidebar ? "default" : "outline"} 
-                  className={showLeftSidebar ? "bg-primary text-black font-bold" : "border-cyan-500/30 text-primary"}
-                >
-                  {showLeftSidebar ? t.visible : t.hidden}
-                </Button>
-              </div>
-
-              <div className="flex items-center justify-between p-4 border border-cyan-500/20 bg-black/40 rounded-lg">
-                <div>
-                  <h3 className="font-bold text-primary">{t.analytics}</h3>
-                  <p className="text-xs text-muted-foreground mt-1">{t.analyticsDesc}</p>
-                </div>
-                <Button 
-                  onClick={toggleRightSidebar}
-                  variant={showRightSidebar ? "default" : "outline"} 
-                  className={showRightSidebar ? "bg-primary text-black font-bold" : "border-cyan-500/30 text-primary"}
-                >
-                  {showRightSidebar ? t.visible : t.hidden}
-                </Button>
-              </div>
-              
-              <div className="flex items-center justify-between p-4 border border-cyan-500/20 bg-black/40 rounded-lg">
-                <div>
-                  <h3 className="font-bold text-primary">{t.tickerLabel}</h3>
-                  <p className="text-xs text-muted-foreground mt-1">{t.tickerDesc}</p>
-                </div>
-                <Button 
-                  onClick={toggleTicker}
-                  variant={showTicker ? "default" : "outline"} 
-                  className={showTicker ? "bg-primary text-black font-bold" : "border-cyan-500/30 text-primary"}
-                >
-                  {showTicker ? t.visible : t.hidden}
-                </Button>
-              </div>
-            </div>
-          </section>
+          {/* Layout Customization Removed - Now controlled via UI Toggle Buttons on main screen */}
 
           {/* Danger Zone */}
           <section className="p-6 border border-destructive/50 bg-destructive/10 rounded-lg flex flex-col">
