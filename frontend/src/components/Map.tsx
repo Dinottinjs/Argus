@@ -4,7 +4,7 @@ import DeckGL from '@deck.gl/react';
 import { ScatterplotLayer, GeoJsonLayer } from '@deck.gl/layers';
 import { HeatmapLayer } from '@deck.gl/aggregation-layers';
 import { Map as MapGL } from 'react-map-gl/maplibre';
-import { FlyToInterpolator } from '@deck.gl/core';
+import { FlyToInterpolator, MapView } from '@deck.gl/core';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import { useArgusStore } from '@/store/useArgusStore';
 
@@ -156,9 +156,10 @@ export default function GlobalMap() {
   return (
     <div className="relative w-full h-full">
       <DeckGL
+        views={[new MapView({ id: 'main', farZMultiplier: 100 })]}
         viewState={deckViewState}
         onViewStateChange={({viewState}) => setViewState(viewState)}
-        controller={true}
+        controller={{ minZoom: 2.0, maxZoom: 20 }}
         layers={layers}
         getTooltip={({object}: any) => {
           if (!object) return null;

@@ -10,7 +10,7 @@ import { useArgusStore } from "@/store/useArgusStore";
 
 const GlobalMap = dynamic(() => import("@/components/Map"), {
   ssr: false,
-  loading: () => <div className="w-full h-full flex items-center justify-center bg-background text-primary">Loading Core Visualizer...</div>
+  loading: () => <div className="w-full h-full flex items-center justify-center bg-background text-primary animate-pulse">Lade Karte / Loading Map...</div>
 });
 
 export default function ArgusDashboard() {
@@ -60,7 +60,12 @@ export default function ArgusDashboard() {
         processed: "Processed",
         nodes: "Nodes",
         latency: "Latency",
-        ticker: "ARGUS TICKER"
+        ticker: "ARGUS TICKER",
+        src: "SRC:",
+        id: "ID:",
+        critical: "CRITICAL",
+        high: "HIGH",
+        loadingMap: "Loading Core Visualizer..."
       },
       de: {
         title: "Argus Kommando",
@@ -91,7 +96,12 @@ export default function ArgusDashboard() {
         processed: "Verarbeitet",
         nodes: "Knoten",
         latency: "Latenz",
-        ticker: "ARGUS TICKER"
+        ticker: "ARGUS TICKER",
+        src: "QUELLE:",
+        id: "ID:",
+        critical: "KRITISCH",
+        high: "HOCH",
+        loadingMap: "Lade Kern-Visualisierer..."
       }
     };
     return dict[language];
@@ -123,6 +133,9 @@ export default function ArgusDashboard() {
           <h1 className="text-xl font-bold tracking-widest text-primary uppercase neon-text group-hover:scale-105 transition-transform">
             {t.title}
           </h1>
+          <Badge className="ml-2 bg-primary/20 text-primary border border-primary/50 px-2 py-0.5 text-[10px] uppercase shadow-[0_0_10px_rgba(6,182,212,0.6)] animate-pulse-glow hidden md:flex">
+            V12
+          </Badge>
         </div>
         
         <div className="flex-1 max-w-xl mx-8 relative">
@@ -186,16 +199,16 @@ export default function ArgusDashboard() {
                 >
                   <div className="flex justify-between items-start mb-2">
                     <span className={`text-xs font-bold font-mono tracking-widest ${event.type === 'CRITICAL' ? 'text-destructive drop-shadow-[0_0_5px_rgba(255,0,0,0.8)]' : event.type === 'HIGH' ? 'text-orange-500' : event.type === 'ISS_TRACKER' ? 'text-white' : 'text-primary'}`}>
-                      {event.type}
+                      {event.type === 'CRITICAL' ? t.critical : event.type === 'HIGH' ? t.high : event.type}
                     </span>
                     <span className="text-[10px] text-primary/50 font-mono">{event.time}</span>
                   </div>
                   <p className="text-white/90 text-xs font-medium leading-relaxed drop-shadow-md">{event.title}</p>
                   <div className="mt-2 text-[10px] text-primary/40 flex justify-between font-mono items-center">
                     <span className={`px-1 py-0.5 rounded-sm ${event.source.includes('NASA') ? 'bg-blue-900/40 text-blue-400 border border-blue-500/30' : event.source.includes('UN') ? 'bg-indigo-900/40 text-indigo-400 border border-indigo-500/30' : 'bg-slate-800/40'}`}>
-                      SRC: {event.source}
+                      {t.src} {event.source}
                     </span>
-                    <span>ID: {event.id.substring(0,8)}</span>
+                    <span>{t.id} {event.id.substring(0,8)}</span>
                   </div>
                 </div>
               ))
@@ -318,7 +331,7 @@ export default function ArgusDashboard() {
               <span className="text-primary/50 font-mono text-xs">|</span>
               {events.slice(0, 10).map((event, idx) => (
                 <span key={`ticker-${loopId}-${event.id}-${idx}`} className="text-xs font-mono text-slate-300 flex-shrink-0">
-                  <span className={event.type === 'CRITICAL' ? 'text-destructive' : event.type === 'HIGH' ? 'text-orange-500' : 'text-primary'}>[{event.type}]</span> {event.title}
+                  <span className={event.type === 'CRITICAL' ? 'text-destructive' : event.type === 'HIGH' ? 'text-orange-500' : 'text-primary'}>[{event.type === 'CRITICAL' ? t.critical : event.type === 'HIGH' ? t.high : event.type}]</span> {event.title}
                   <span className="text-primary/50 ml-8">|</span>
                 </span>
               ))}

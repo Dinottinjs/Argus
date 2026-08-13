@@ -34,7 +34,7 @@ export default function SettingsPage() {
   };
 
   const handleUpdate = () => {
-    if (confirm("Argus will now close, update and restart. This might take a minute. Proceed?")) {
+    if (confirm(t?.alertUpdate || "Argus will now close, update and restart. This might take a minute. Proceed?")) {
       setIsUpdating(true);
       fetch("http://localhost:8001/update", { method: "POST" })
         .then(() => {
@@ -43,7 +43,7 @@ export default function SettingsPage() {
           }, 2000);
         })
         .catch(() => {
-          alert("Failed to start update.");
+          alert(t?.alertUpdateFail || "Failed to start update.");
           setIsUpdating(false);
         });
     }
@@ -84,7 +84,13 @@ export default function SettingsPage() {
       tickerLabel: "Bloomberg Ticker (Bottom Bar)",
       tickerDesc: "Displays the animated marquee ticker at the bottom of the screen.",
       visible: "Visible",
-      hidden: "Hidden"
+      hidden: "Hidden",
+      alertUpdate: "Argus will now close, update and restart. This might take a minute. Proceed?",
+      alertUpdateFail: "Failed to start update.",
+      alertUninstall: "CRITICAL WARNING: This will completely destroy the Argus Command Center from your system. Are you sure?",
+      alertUninstallInit: "Uninstall sequence initiated. The software will now terminate.",
+      alertUninstallSent: "Uninstall signal sent.",
+      alertReset: "Layout reset to defaults!"
     },
     de: {
       settings: "Argus Einstellungen",
@@ -120,7 +126,13 @@ export default function SettingsPage() {
       tickerLabel: "Bloomberg Ticker (Untere Leiste)",
       tickerDesc: "Zeigt den animierten Marquee-Ticker am unteren Bildschirmrand.",
       visible: "Sichtbar",
-      hidden: "Versteckt"
+      hidden: "Versteckt",
+      alertUpdate: "Argus wird nun geschlossen, aktualisiert und neu gestartet. Das kann eine Minute dauern. Fortfahren?",
+      alertUpdateFail: "Update konnte nicht gestartet werden.",
+      alertUninstall: "KRITISCHE WARNUNG: Dies wird das Argus Command Center vollständig von deinem System zerstören. Bist du sicher?",
+      alertUninstallInit: "Deinstallation eingeleitet. Die Software wird nun beendet.",
+      alertUninstallSent: "Deinstallations-Signal gesendet.",
+      alertReset: "Layout auf Standardwerte zurückgesetzt!"
     }
   };
   
@@ -154,13 +166,13 @@ export default function SettingsPage() {
   };
 
   const handleUninstall = () => {
-    if (confirm("CRITICAL WARNING: This will completely destroy the Argus Command Center from your system. Are you sure?")) {
+    if (confirm(t?.alertUninstall || "CRITICAL WARNING: This will completely destroy the Argus Command Center from your system. Are you sure?")) {
       fetch("http://localhost:8001/uninstall", { method: "POST" })
         .then(() => {
-          alert("Uninstall sequence initiated. The software will now terminate.");
+          alert(t?.alertUninstallInit || "Uninstall sequence initiated. The software will now terminate.");
           window.close(); // Attempt to close window
         })
-        .catch(() => alert("Uninstall signal sent."));
+        .catch(() => alert(t?.alertUninstallSent || "Uninstall signal sent."));
     }
   };
 
@@ -321,7 +333,7 @@ export default function SettingsPage() {
                 <svg xmlns="http://www.w3.org/2000/svg" className="text-primary h-6 w-6" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M3 9h18"/><path d="M9 21V9"/></svg>
                 <h2 className="text-lg font-bold uppercase tracking-wider text-muted-foreground">{t.layoutCust}</h2>
               </div>
-              <Button onClick={() => { resetUI(); alert("Layout reset to defaults!"); }} variant="outline" className="border-primary/50 text-primary hover:bg-primary/20">
+              <Button onClick={() => { resetUI(); alert(t.alertReset); }} variant="outline" className="border-primary/50 text-primary hover:bg-primary/20">
                 {t.resetUi}
               </Button>
             </div>
