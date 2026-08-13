@@ -28,7 +28,6 @@ self.onmessage = (e) => {
 let ws: WebSocket;
 let reconnectTimer: any;
 let eventCache: any[] = [];
-let pendingEvents: any[] = [];
 const MAX_EVENTS = 5000;
 
 function connectWebSocket(url: string) {
