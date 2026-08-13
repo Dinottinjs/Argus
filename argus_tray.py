@@ -84,9 +84,12 @@ class LocalAPIHandler(BaseHTTPRequestHandler):
             self._set_headers()
             update_available = False
             try:
-                subprocess.run(["git", "fetch"], cwd=os.path.dirname(os.path.abspath(__file__)), capture_output=True, timeout=10)
-                status_out = subprocess.run(["git", "status", "-uno"], cwd=os.path.dirname(os.path.abspath(__file__)), capture_output=True, text=True, timeout=5).stdout
-                if "Your branch is behind" in status_out:
+                current_dir = os.path.dirname(os.path.abspath(__file__))
+                subprocess.run(["git", "fetch", "origin", "main"], cwd=current_dir, capture_output=True, timeout=10)
+                local_hash = subprocess.run(["git", "rev-parse", "HEAD"], cwd=current_dir, capture_output=True, text=True, timeout=5).stdout.strip()
+                remote_hash = subprocess.run(["git", "rev-parse", "origin/main"], cwd=current_dir, capture_output=True, text=True, timeout=5).stdout.strip()
+                
+                if local_hash and remote_hash and local_hash != remote_hash:
                     update_available = True
             except Exception as e:
                 print(f"Update check error: {e}")
