@@ -187,8 +187,14 @@ try {
 Set-Location $PSScriptRoot
 try {
     Show-StepProgress -Title "Pruefe auf Updates und repariere System (Git Pull)" -Seconds 3
-    & git fetch origin main 2>&1 | Out-Null
-    & git pull origin main 2>&1 | Out-Null
+    $oldErrorAction = $ErrorActionPreference
+    $ErrorActionPreference = 'Continue'
+    
+    # 100% force update, dropping local changes to prevent conflicts
+    git fetch origin main 2>&1 | Out-Null
+    git reset --hard origin/main 2>&1 | Out-Null
+    
+    $ErrorActionPreference = $oldErrorAction
     Write-Host "[+] Argus ist auf dem neuesten Stand!" -ForegroundColor Green
 } catch {
     Write-Host "[!] Auto-Update uebersprungen (Git evtl. nicht gefunden)." -ForegroundColor Yellow
