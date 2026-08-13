@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { useArgusStore } from "@/store/useArgusStore";
-import versionData from "../../version.json";
+import versionData from "../version.json";
 
 const GlobalMap = dynamic(() => import("@/components/Map"), {
   ssr: false,
