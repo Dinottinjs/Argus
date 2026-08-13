@@ -27,13 +27,20 @@ current_status = "offline"
 tray_icon = None
 
 def create_image(color):
-    # Create a 64x64 image with a colored circle
-    width = 64
-    height = 64
-    image = Image.new('RGBA', (width, height), (0, 0, 0, 0))
-    dc = ImageDraw.Draw(image)
-    dc.ellipse([8, 8, 56, 56], fill=color)
-    return image
+    try:
+        base_img = Image.open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "public", "logo.ico")).convert("RGBA")
+        base_img = base_img.resize((64, 64))
+        dc = ImageDraw.Draw(base_img)
+        # Draw a small status circle in bottom right
+        dc.ellipse([48, 48, 64, 64], fill=color, outline="black")
+        return base_img
+    except Exception as e:
+        print(f"Icon load error: {e}")
+        # Fallback to circle if logo.ico is missing
+        image = Image.new('RGBA', (64, 64), (0, 0, 0, 0))
+        dc = ImageDraw.Draw(image)
+        dc.ellipse([8, 8, 56, 56], fill=color)
+        return image
 
 def set_status(status):
     global current_status, tray_icon
@@ -73,6 +80,17 @@ class LocalAPIHandler(BaseHTTPRequestHandler):
         elif self.path == '/status':
             self._set_headers()
             self.wfile.write(json.dumps({"status": current_status}).encode('utf-8'))
+        elif self.path == '/update_status':
+            self._set_headers()
+            update_available = False
+            try:
+                subprocess.run(["git", "fetch"], cwd=os.path.dirname(os.path.abspath(__file__)), capture_output=True, timeout=10)
+                status_out = subprocess.run(["git", "status", "-uno"], cwd=os.path.dirname(os.path.abspath(__file__)), capture_output=True, text=True, timeout=5).stdout
+                if "Your branch is behind" in status_out:
+                    update_available = True
+            except Exception as e:
+                print(f"Update check error: {e}")
+            self.wfile.write(json.dumps({"update_available": update_available}).encode('utf-8'))
         else:
             self._set_headers(404)
 
@@ -83,6 +101,11 @@ class LocalAPIHandler(BaseHTTPRequestHandler):
             print("Uninstall requested...")
             # Trigger uninstall in a new thread so we can reply to the HTTP request
             threading.Thread(target=perform_uninstall).start()
+        elif self.path == '/update':
+            self._set_headers()
+            self.wfile.write(json.dumps({"status": "updating"}).encode('utf-8'))
+            print("Update requested...")
+            threading.Thread(target=perform_update).start()
         else:
             self._set_headers(404)
 
@@ -113,6 +136,21 @@ def perform_uninstall():
     if tray_icon:
         tray_icon.stop()
     
+    os._exit(0)
+
+def perform_update():
+    print("Starting update sequence...")
+    try:
+        # Launch install.bat in a new console
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+        bat_path = os.path.join(current_dir, "install.bat")
+        subprocess.Popen(f'cmd.exe /c start "" "{bat_path}"', shell=True, cwd=current_dir)
+    except Exception as e:
+        print(f"Error starting update: {e}")
+        
+    global tray_icon
+    if tray_icon:
+        tray_icon.stop()
     os._exit(0)
 
 def monitor_docker():

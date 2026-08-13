@@ -198,9 +198,11 @@ try {
 Show-StepProgress -Title "Baue und Starte Argus Container System" -Seconds 5
 & docker compose up --build -d
 
-# 5. Companion App
+# 5. Companion App & Icon Generation
 Write-Host "`n[*] Richte Windows Taskleisten-Companion ein..." -ForegroundColor Cyan
 & python -m pip install pystray Pillow psutil requests --quiet
+Write-Host "[*] Generiere natives Windows App Icon (.ico)..." -ForegroundColor Cyan
+& python -c "from PIL import Image; import os; img = Image.open('public/logo.png').resize((256, 256)); img.save('public/logo.ico')"
 Start-Process -FilePath "pythonw" -ArgumentList "argus_tray.py"
 
 # 6. Shortcut & Native App
@@ -211,7 +213,7 @@ if (-not $isUpdate) {
         $Shortcut = $WshShell.CreateShortcut($ShortcutPath)
         $Shortcut.TargetPath = "C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe"
         $Shortcut.Arguments = "--app=http://localhost:3000"
-        $Shortcut.IconLocation = "$PSScriptRoot\public\logo.png"
+        $Shortcut.IconLocation = "$PSScriptRoot\public\logo.ico"
         $Shortcut.Save()
     } catch {
         Write-Host "[!] Konnte Shortcut nicht erstellen." -ForegroundColor Yellow

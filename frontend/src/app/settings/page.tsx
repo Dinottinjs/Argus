@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { ArrowLeft, ShieldAlert, Trash2, Network } from "lucide-react";
+import { ArrowLeft, ShieldAlert, Trash2, Network, RefreshCw, DownloadCloud, CheckCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
 import { useArgusStore } from "@/store/useArgusStore";
@@ -16,6 +16,37 @@ export default function SettingsPage() {
   const [interfaces, setInterfaces] = useState<any[]>([]);
   const [selectedInterface, setSelectedInterface] = useState<string>("");
   const [statusMsg, setStatusMsg] = useState("");
+  
+  const [updateAvailable, setUpdateAvailable] = useState(false);
+  const [checkingUpdate, setCheckingUpdate] = useState(false);
+  const [isUpdating, setIsUpdating] = useState(false);
+
+  const checkForUpdates = () => {
+    setCheckingUpdate(true);
+    fetch("http://localhost:8001/update_status")
+      .then(res => res.json())
+      .then(data => {
+        setUpdateAvailable(data.update_available);
+        setCheckingUpdate(false);
+      })
+      .catch(() => setCheckingUpdate(false));
+  };
+
+  const handleUpdate = () => {
+    if (confirm("Argus will now close, update and restart. This might take a minute. Proceed?")) {
+      setIsUpdating(true);
+      fetch("http://localhost:8001/update", { method: "POST" })
+        .then(() => {
+          setTimeout(() => {
+            window.close();
+          }, 2000);
+        })
+        .catch(() => {
+          alert("Failed to start update.");
+          setIsUpdating(false);
+        });
+    }
+  };
 
   useEffect(() => {
     // Fetch interfaces from the local companion app
@@ -25,6 +56,8 @@ export default function SettingsPage() {
         setInterfaces(data.interfaces || []);
       })
       .catch(err => console.error("Companion app not running", err));
+      
+    checkForUpdates();
       
     const saved = localStorage.getItem("argus_network_interface");
     if (saved) setSelectedInterface(saved);
@@ -139,6 +172,50 @@ export default function SettingsPage() {
             </div>
           </section>
 
+          {/* System Updates */}
+          <section className="p-6 border border-border bg-card/50 rounded-lg">
+            <div className="flex items-center gap-3 mb-4">
+              <RefreshCw className={`text-primary h-6 w-6 ${checkingUpdate ? 'animate-spin' : ''}`} />
+              <h2 className="text-lg font-bold uppercase tracking-wider text-muted-foreground">System Updates</h2>
+            </div>
+            <p className="text-sm text-muted-foreground mb-6">
+              Argus can automatically pull the latest intelligence packages, map engines, and data workers from the master repository.
+            </p>
+            
+            <div className="flex flex-col gap-4">
+              <div className="flex items-center justify-between p-4 bg-black/40 border border-cyan-500/20 rounded-md">
+                <div className="flex items-center gap-3">
+                  {updateAvailable ? (
+                    <DownloadCloud className="text-orange-500 h-6 w-6 animate-pulse" />
+                  ) : (
+                    <CheckCircle className="text-green-500 h-6 w-6" />
+                  )}
+                  <div>
+                    <div className="font-bold text-sm">Argus Version Status</div>
+                    <div className="text-xs text-muted-foreground">
+                      {checkingUpdate ? 'Checking for updates...' : updateAvailable ? 'New major update available!' : 'System is up to date.'}
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="flex items-center gap-2">
+                  <Button variant="outline" size="sm" onClick={checkForUpdates} disabled={checkingUpdate || isUpdating}>
+                    Check Again
+                  </Button>
+                  {updateAvailable && (
+                    <Button 
+                      onClick={handleUpdate} 
+                      disabled={isUpdating}
+                      className="bg-primary text-primary-foreground hover:bg-primary/90 shadow-[0_0_15px_rgba(6,182,212,0.5)] animate-pulse-glow"
+                    >
+                      {isUpdating ? 'Updating...' : 'Install Update Now'}
+                    </Button>
+                  )}
+                </div>
+              </div>
+            </div>
+          </section>
+          
           {/* Layout Customization */}
           <section className="p-6 border border-border bg-card/50 rounded-lg mt-8">
             <div className="flex items-center justify-between mb-4">
