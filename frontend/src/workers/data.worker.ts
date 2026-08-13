@@ -82,8 +82,8 @@ function connectWebSocket(url: string) {
           timestamp: data.timestamp
         };
         
-        // Deduplicate
-        if (!eventCache.find(e => e.id === newEvent.id)) {
+        // Deduplicate by ID or identical Title from the same source
+        if (!eventCache.find(e => e.id === newEvent.id || (e.title === newEvent.title && e.source === newEvent.source))) {
             eventCache.unshift(newEvent);
             if (eventCache.length > MAX_EVENTS) {
                 eventCache.pop();

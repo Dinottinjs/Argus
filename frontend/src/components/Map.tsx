@@ -4,7 +4,7 @@ import DeckGL from '@deck.gl/react';
 import { ScatterplotLayer, GeoJsonLayer, ArcLayer } from '@deck.gl/layers';
 import { HeatmapLayer } from '@deck.gl/aggregation-layers';
 import { Map as MapGL } from 'react-map-gl/maplibre';
-import { FlyToInterpolator, MapView } from '@deck.gl/core';
+import { FlyToInterpolator, _GlobeView as GlobeView } from '@deck.gl/core';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import { useArgusStore } from '@/store/useArgusStore';
 
@@ -156,9 +156,8 @@ export default function GlobalMap() {
         })
       );
     }
-    // Network / Cyber Arcs (Show only very recent events to simulate bursts)
-    const now = Date.now();
-    const networkEvents = events.filter(e => e.type === 'NETWORK_LINK' && e.coordinates && e.target_coordinates && e.timestamp && (now - e.timestamp < 5000));
+    // Stable Network / Cyber Arcs (Always visible)
+    const networkEvents = events.filter(e => e.type === 'NETWORK_LINK' && e.coordinates && e.target_coordinates);
     
     if (networkEvents.length > 0) {
       activeLayers.push(
@@ -179,16 +178,17 @@ export default function GlobalMap() {
     return activeLayers;
   }, [events, binaryPositions, showHeatmap, showScatterplot, selectedCountry]);
   return (
-    <div className="relative w-full h-full">
+    <div className="relative w-full h-full bg-[url('https://images.unsplash.com/photo-1462331940025-496dfbfc7564?q=80&w=2000&auto=format&fit=crop')] bg-cover bg-center animate-pulse-slow">
+      {/* Dark overlay for galaxy background so it's not too bright */}
+      <div className="absolute inset-0 bg-black/60 pointer-events-none z-0"></div>
       <DeckGL
         // @ts-ignore
-        views={[new MapView({ id: 'main', farZMultiplier: 100, repeat: false })]}
+        views={[new GlobeView({ id: 'globe', resolution: 2 })]}
         layers={layers}
         // @ts-ignore
         viewState={deckViewState}
         onViewStateChange={({viewState}) => {
-          // Strictly limit the map panning bounds
-          viewState.longitude = Math.min(180, Math.max(-180, viewState.longitude));
+          // Globe view automatically handles wrapping, but we can limit latitude to prevent flipping upside down
           viewState.latitude = Math.min(85, Math.max(-85, viewState.latitude));
           setViewState(viewState);
         }}
@@ -198,11 +198,9 @@ export default function GlobalMap() {
           if (object.properties && object.properties.admin) return object.properties.admin;
           return `${object.title}\nSource: ${object.source}`;
         }}
+        className="z-10"
       >
-        <MapGL
-          mapStyle={mapStyle === 'satellite' ? (ESRI_SATELLITE as any) : (CARTO_DARK_MATTER as any)}
-          renderWorldCopies={false}
-        />
+        {/* No MapGL, Globe handles projection purely through deck.gl layers */}
       </DeckGL>
     </div>
   );

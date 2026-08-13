@@ -303,38 +303,39 @@ async def news_worker(r: redis.Redis, active_interface: str = ""):
 
 async def network_worker(r: redis.Redis, active_interface: str = ""):
     print("Started Global Backbone Network Worker")
-    import random
+    hubs = {
+        "Ashburn": [-77.4874, 39.0438],
+        "Frankfurt": [8.6821, 50.1109],
+        "London": [-0.1278, 51.5074],
+        "Tokyo": [139.6917, 35.6895],
+        "Singapore": [103.8198, 1.3521],
+        "Sydney": [151.2093, -33.8688],
+        "Sao Paulo": [-46.6333, -23.5505],
+        "San Jose": [-121.8863, 37.3382]
+    }
     
-    # Major Internet Backbone Hubs
-    hubs = [
-        {"name": "Ashburn, USA", "coord": [-77.4874, 39.0438]},
-        {"name": "Frankfurt, DE", "coord": [8.6821, 50.1109]},
-        {"name": "London, UK", "coord": [-0.1278, 51.5074]},
-        {"name": "Tokyo, JP", "coord": [139.6917, 35.6895]},
-        {"name": "Singapore, SG", "coord": [103.8198, 1.3521]},
-        {"name": "Sydney, AU", "coord": [151.2093, -33.8688]},
-        {"name": "Sao Paulo, BR", "coord": [-46.6333, -23.5505]},
-        {"name": "San Jose, USA", "coord": [-121.8863, 37.3382]}
+    backbones = [
+        ("Ashburn", "London"),
+        ("London", "Frankfurt"),
+        ("Ashburn", "San Jose"),
+        ("San Jose", "Tokyo"),
+        ("Tokyo", "Singapore"),
+        ("Singapore", "Sydney"),
+        ("Ashburn", "Sao Paulo"),
+        ("Frankfurt", "Singapore")
     ]
     
     while True:
         try:
-            # Simulate 1-3 network connections (attacks, spikes, transfers)
-            num_events = random.randint(1, 3)
-            for _ in range(num_events):
-                source = random.choice(hubs)
-                target = random.choice(hubs)
-                while target == source:
-                    target = random.choice(hubs)
-                
+            for source, target in backbones:
                 event = {
                     "type": "NETWORK_LINK",
-                    "title": f"DDoS/High Traffic Anomaly: {source['name']} -> {target['name']}",
-                    "coordinates": source['coord'],
-                    "target_coordinates": target['coord'],
+                    "title": f"Global Backbone: {source} <-> {target}",
+                    "coordinates": hubs[source],
+                    "target_coordinates": hubs[target],
                     "timestamp": int(time.time() * 1000),
-                    "id": f"net_{uuid.uuid4().hex[:8]}",
-                    "source": "BGP Backbone Monitors"
+                    "id": f"bgp_{source}_{target}",
+                    "source": "BGP Monitors"
                 }
                 
                 payload = orjson.dumps({"type": "NEW_EVENT", "data": event})
@@ -342,8 +343,8 @@ async def network_worker(r: redis.Redis, active_interface: str = ""):
         except Exception as e:
             print(f"Network Worker Error: {e}")
             
-        # Burst every 1-3 seconds
-        await asyncio.sleep(random.uniform(1.0, 3.0))
+        # Refresh every 10 mins to keep them in cache
+        await asyncio.sleep(600)
 
 async def start_workers():
     r = await redis.from_url(REDIS_URL)

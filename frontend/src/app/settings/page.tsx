@@ -212,7 +212,7 @@ export default function SettingsPage() {
               <h2 className="text-lg font-bold uppercase tracking-wider text-muted-foreground">{t.languageLabel}</h2>
             </div>
             
-            <div className="flex gap-4 items-center">
+            <div className="flex flex-col sm:flex-row gap-4 items-center">
               <select 
                 className="flex-1 bg-input/50 border border-border rounded-md px-3 py-2 text-sm focus:ring-primary focus:border-primary outline-none"
                 value={language}
@@ -234,7 +234,7 @@ export default function SettingsPage() {
               {t.networkDesc}
             </p>
             
-            <div className="flex gap-4 items-center">
+            <div className="flex flex-col sm:flex-row gap-4 items-center">
               <select 
                 className="flex-1 bg-input/50 border border-border rounded-md px-3 py-2 text-sm focus:ring-primary focus:border-primary outline-none"
                 value={selectedInterface}
@@ -268,13 +268,13 @@ export default function SettingsPage() {
                 <Button 
                   onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
                   variant="outline" 
-                  className="border-cyan-500/30 text-primary w-24"
+                  className="border-cyan-500/30 text-primary w-24 shrink-0"
                 >
                   {theme === 'dark' ? t.dark : t.light}
                 </Button>
               </div>
 
-              <div className="flex items-center justify-between p-4 border border-cyan-500/20 bg-black/40 rounded-lg">
+              <div className="flex flex-col sm:flex-row gap-4 sm:items-center justify-between p-4 border border-cyan-500/20 bg-black/40 rounded-lg">
                 <div>
                   <h3 className="font-bold text-primary">{t.reduceMotion}</h3>
                   <p className="text-xs text-muted-foreground mt-1">{t.reduceMotionDesc}</p>
@@ -282,13 +282,13 @@ export default function SettingsPage() {
                 <Button 
                   onClick={toggleReduceMotion}
                   variant={reduceMotion ? "default" : "outline"} 
-                  className={reduceMotion ? "bg-primary text-black font-bold" : "border-cyan-500/30 text-primary"}
+                  className={`shrink-0 ${reduceMotion ? "bg-primary text-black font-bold" : "border-cyan-500/30 text-primary"}`}
                 >
                   {reduceMotion ? t.enabled : t.disabled}
                 </Button>
               </div>
 
-              <div className="flex items-center justify-between p-4 border border-cyan-500/20 bg-black/40 rounded-lg">
+              <div className="flex flex-col sm:flex-row gap-4 sm:items-center justify-between p-4 border border-cyan-500/20 bg-black/40 rounded-lg">
                 <div>
                   <h3 className="font-bold text-primary">{t.airGapped}</h3>
                   <p className="text-xs text-muted-foreground mt-1">{t.airGappedDesc}</p>
@@ -296,7 +296,7 @@ export default function SettingsPage() {
                 <Button 
                   onClick={toggleLocalOnlyMode}
                   variant={localOnlyMode ? "destructive" : "outline"} 
-                  className={localOnlyMode ? "bg-destructive text-white font-bold" : "border-cyan-500/30 text-primary"}
+                  className={`shrink-0 ${localOnlyMode ? "bg-destructive text-white font-bold" : "border-cyan-500/30 text-primary"}`}
                 >
                   {localOnlyMode ? t.enabled : t.disabled}
                 </Button>
@@ -315,7 +315,7 @@ export default function SettingsPage() {
             </p>
             
             <div className="flex flex-col gap-4">
-              <div className="flex items-center justify-between p-4 bg-black/40 border border-cyan-500/20 rounded-md">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between p-4 bg-black/40 border border-cyan-500/20 rounded-md gap-4">
                 <div className="flex items-center gap-3">
                   {updateAvailable ? (
                     <DownloadCloud className="text-orange-500 h-6 w-6 animate-pulse" />
@@ -333,7 +333,7 @@ export default function SettingsPage() {
                   </div>
                 </div>
                 
-                <div className="flex items-center gap-2">
+                <div className="flex flex-wrap items-center gap-2">
                   <Button variant="outline" size="sm" onClick={checkForUpdates} disabled={checkingUpdate || isUpdating}>
                     {t.checkAgain}
                   </Button>
@@ -361,7 +361,7 @@ export default function SettingsPage() {
           {/* Layout Customization Removed - Now controlled via UI Toggle Buttons on main screen */}
 
           {/* Danger Zone */}
-          <section className="p-6 border border-destructive/50 bg-destructive/10 rounded-lg flex flex-col">
+          <section className="p-6 border border-destructive/50 bg-destructive/10 rounded-lg flex flex-col md:col-span-2">
             <div className="flex items-center gap-3 mb-4">
               <Trash2 className="text-destructive h-6 w-6" />
               <h2 className="text-lg font-bold uppercase tracking-wider text-destructive">{t.dangerZone}</h2>
@@ -369,17 +369,18 @@ export default function SettingsPage() {
             <p className="text-sm text-muted-foreground mb-6">
               {t.dangerDesc}
             </p>
-            <Button onClick={handleUninstall} variant="destructive" className="w-full uppercase font-bold tracking-widest">
-              {t.uninstall}
-            </Button>
+            <div className="flex justify-end">
+              <Button onClick={handleUninstall} variant="destructive" className="w-full md:w-auto uppercase font-bold tracking-widest">
+                {t.uninstall}
+              </Button>
+            </div>
           </section>
 
-          <footer className="mt-8 text-center text-xs text-muted-foreground py-4">
-            © 2026 Dinottinjs. All rights reserved.
-          </footer>
-
-
         </div>
+        
+        <footer className="mt-8 text-center text-xs text-muted-foreground py-8 border-t border-border/30">
+          © 2026 Dinottinjs. All rights reserved.
+        </footer>
       </main>
     </div>
   );
