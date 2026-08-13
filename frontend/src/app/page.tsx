@@ -24,7 +24,6 @@ export default function ArgusDashboard() {
     toggleHeatmap, toggleScatterplot, 
     togglePause, clearEvents,
     toggleMapStyle,
-    toggleMapStyle,
     initWorker,
     language
   } = useArgusStore();
