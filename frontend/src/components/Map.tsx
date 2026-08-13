@@ -158,6 +158,7 @@ export default function GlobalMap() {
       <DeckGL
         // @ts-ignore - DeckGL types for views prop are too strict
         views={[new MapView({ id: 'main', farZMultiplier: 100 })]}
+        // @ts-ignore - Single viewState is supported at runtime
         viewState={deckViewState}
         onViewStateChange={({viewState}) => setViewState(viewState)}
         controller={true}
