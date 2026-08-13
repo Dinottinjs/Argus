@@ -211,9 +211,10 @@ if (-not $isUpdate) {
     try {
         $WshShell = New-Object -comObject WScript.Shell
         $Shortcut = $WshShell.CreateShortcut($ShortcutPath)
-        $Shortcut.TargetPath = "C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe"
-        $Shortcut.Arguments = "--app=http://localhost:3000"
+        $Shortcut.TargetPath = "pythonw.exe"
+        $Shortcut.Arguments = """$PSScriptRoot\launcher.py"""
         $Shortcut.IconLocation = "$PSScriptRoot\public\logo.ico"
+        $Shortcut.WorkingDirectory = "$PSScriptRoot"
         $Shortcut.Save()
     } catch {
         Write-Host "[!] Konnte Shortcut nicht erstellen." -ForegroundColor Yellow
@@ -230,8 +231,7 @@ Write-Host "=======================================================" -Foreground
 Write-Host "[+] Die Argus Companion App laeuft nun in der Taskleiste." -ForegroundColor Gray
 Write-Host "[+] Argus Command Center startet als native App..." -ForegroundColor Gray
 
-Start-Sleep -Seconds 3
-Start-Process "C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe" -ArgumentList "--app=http://localhost:3000"
+Start-Sleep -Seconds 2
+Start-Process -FilePath "pythonw.exe" -ArgumentList """$PSScriptRoot\launcher.py""" -WorkingDirectory "$PSScriptRoot"
 
-Write-Host "`nDruecke eine beliebige Taste zum Beenden..." -ForegroundColor Cyan
-$null = $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
+Write-Host "`n[*] Auto-Close. Goodbye!" -ForegroundColor Cyan
