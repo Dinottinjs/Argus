@@ -11,10 +11,15 @@ import { useArgusStore } from '@/store/useArgusStore';
 // Removed INITIAL_VIEW_STATE as we now use controlled viewState from store
 
 export default function GlobalMap() {
-  const { 
-    events, binaryPositions, showHeatmap, showScatterplot, mapStyle,
-    viewState, setViewState, setSelectedCountry, selectedCountry
-  } = useArgusStore();
+  const events = useArgusStore(s => s.events);
+  const binaryPositions = useArgusStore(s => s.binaryPositions);
+  const showHeatmap = useArgusStore(s => s.showHeatmap);
+  const showScatterplot = useArgusStore(s => s.showScatterplot);
+  const mapStyle = useArgusStore(s => s.mapStyle);
+  const viewState = useArgusStore(s => s.viewState);
+  const setViewState = useArgusStore(s => s.setViewState);
+  const setSelectedCountry = useArgusStore(s => s.setSelectedCountry);
+  const selectedCountry = useArgusStore(s => s.selectedCountry);
   
   const deckViewState = React.useMemo(() => {
     const baseState = { ...viewState, minZoom: 2.0, maxZoom: 20 };
@@ -143,8 +148,8 @@ export default function GlobalMap() {
           getTargetPosition: (d: any) => d.target_coordinates,
           getSourceColor: [6, 182, 212, 255], // Cyan origin
           getTargetColor: [255, 50, 50, 255], // Red destination
-          getWidth: 3,
-          getHeight: 0.05,
+          getWidth: 5,
+          getHeight: 0.5,
           greatCircle: true,
           pickable: true
         })

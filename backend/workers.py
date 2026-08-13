@@ -363,8 +363,8 @@ async def network_worker(r: redis.Redis, active_interface: str = ""):
         except Exception as e:
             print(f"Network Worker Error: {e}")
             
-        # Refresh every 10 mins to keep them in cache
-        await asyncio.sleep(600)
+        # Refresh every 10 seconds to keep them in cache
+        await asyncio.sleep(10)
 
 async def start_workers():
     r = await redis.from_url(REDIS_URL)

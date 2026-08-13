@@ -16,19 +16,31 @@ const GlobalMap = dynamic(() => import("@/components/Map"), {
 });
 
 export default function ArgusDashboard() {
-  const { 
-    events, status, stats, newsStats,
-    showHeatmap, showScatterplot, 
-    isPaused, reduceMotion,
-    showLeftSidebar, showRightSidebar, showTicker,
-    mapStyle,
-    selectedCountry, setSelectedCountry, flyTo,
-    toggleHeatmap, toggleScatterplot, 
-    togglePause, clearEvents, reconnect,
-    toggleMapStyle,
-    initWorker, toggleLeftSidebar, toggleRightSidebar,
-    language
-  } = useArgusStore();
+  const events = useArgusStore(s => s.events);
+  const status = useArgusStore(s => s.status);
+  const stats = useArgusStore(s => s.stats);
+  const newsStats = useArgusStore(s => s.newsStats);
+  const showHeatmap = useArgusStore(s => s.showHeatmap);
+  const showScatterplot = useArgusStore(s => s.showScatterplot);
+  const isPaused = useArgusStore(s => s.isPaused);
+  const reduceMotion = useArgusStore(s => s.reduceMotion);
+  const showLeftSidebar = useArgusStore(s => s.showLeftSidebar);
+  const showRightSidebar = useArgusStore(s => s.showRightSidebar);
+  const showTicker = useArgusStore(s => s.showTicker);
+  const mapStyle = useArgusStore(s => s.mapStyle);
+  const selectedCountry = useArgusStore(s => s.selectedCountry);
+  const setSelectedCountry = useArgusStore(s => s.setSelectedCountry);
+  const flyTo = useArgusStore(s => s.flyTo);
+  const toggleHeatmap = useArgusStore(s => s.toggleHeatmap);
+  const toggleScatterplot = useArgusStore(s => s.toggleScatterplot);
+  const togglePause = useArgusStore(s => s.togglePause);
+  const clearEvents = useArgusStore(s => s.clearEvents);
+  const reconnect = useArgusStore(s => s.reconnect);
+  const toggleMapStyle = useArgusStore(s => s.toggleMapStyle);
+  const initWorker = useArgusStore(s => s.initWorker);
+  const toggleLeftSidebar = useArgusStore(s => s.toggleLeftSidebar);
+  const toggleRightSidebar = useArgusStore(s => s.toggleRightSidebar);
+  const language = useArgusStore(s => s.language);
 
   const t = React.useMemo(() => {
     const dict = {
