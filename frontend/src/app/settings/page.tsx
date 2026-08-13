@@ -5,7 +5,7 @@ import { ArrowLeft, ShieldAlert, Trash2, Network, RefreshCw, DownloadCloud, Chec
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
 import { useArgusStore } from "@/store/useArgusStore";
-import versionData from "../../../../version.json";
+import versionData from "../../../version.json";
 
 export default function SettingsPage() {
   const router = useRouter();

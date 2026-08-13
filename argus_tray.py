@@ -89,14 +89,14 @@ class LocalAPIHandler(BaseHTTPRequestHandler):
                 subprocess.run(["git", "fetch", "origin", "main"], cwd=current_dir, timeout=10)
                 
                 # Compare versions using version.json
-                local_version_file = os.path.join(current_dir, "version.json")
+                local_version_file = os.path.join(current_dir, "frontend", "src", "version.json")
                 local_version = "0.0.0"
                 if os.path.exists(local_version_file):
                     with open(local_version_file, "r") as f:
                         import json as local_json
                         local_version = local_json.load(f).get("version", "0.0.0")
                         
-                remote_version_raw = subprocess.run(["git", "show", "origin/main:version.json"], cwd=current_dir, capture_output=True, text=True, timeout=5).stdout.strip()
+                remote_version_raw = subprocess.run(["git", "show", "origin/main:frontend/src/version.json"], cwd=current_dir, capture_output=True, text=True, timeout=5).stdout.strip()
                 remote_version = "0.0.0"
                 if remote_version_raw:
                     import json as remote_json
