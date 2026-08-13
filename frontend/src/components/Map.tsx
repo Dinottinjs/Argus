@@ -59,11 +59,15 @@ export default function GlobalMap() {
         filled: true,
         lineWidthMinPixels: 1,
         getLineColor: [6, 182, 212, 100], // Cyan outlines
-        getFillColor: (d: any) => d.properties.admin === selectedCountry ? [6, 182, 212, 50] : [0, 0, 0, 0],
+        getFillColor: (d: any) => {
+          const isSelected = selectedCountry && d.properties.admin === selectedCountry.properties.admin;
+          return isSelected ? [6, 182, 212, 50] : [15, 25, 45, 255]; // Solid dark blue earth
+        },
         pickable: true,
         onClick: (info: any) => {
           if (info.object && info.object.properties) {
-            setSelectedCountry(info.object.properties.admin === selectedCountry ? null : info.object.properties.admin);
+            const isSelected = selectedCountry && info.object.properties.admin === selectedCountry.properties.admin;
+            setSelectedCountry(isSelected ? null : info.object);
           }
         },
         updateTriggers: {

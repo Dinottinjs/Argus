@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { useArgusStore } from "@/store/useArgusStore";
+import booleanPointInPolygon from '@turf/boolean-point-in-polygon';
 import versionData from "../version.json";
 
 const GlobalMap = dynamic(() => import("@/components/Map"), {
@@ -118,9 +119,17 @@ export default function ArgusDashboard() {
   const filteredEvents = React.useMemo(() => {
     return events.filter(e => {
       if (selectedCountry) {
-        const titleMatch = e.title.toLowerCase().includes(selectedCountry.toLowerCase());
-        const countryMatch = (e as any).country && (e as any).country.toLowerCase().includes(selectedCountry.toLowerCase());
-        if (!titleMatch && !countryMatch) return false;
+        if (!e.coordinates || e.coordinates.length < 2) return false;
+        try {
+          // Verify if the event's coordinates are physically inside the country polygon
+          const isInside = booleanPointInPolygon([e.coordinates[0], e.coordinates[1]], selectedCountry.geometry);
+          if (!isInside) return false;
+        } catch (err) {
+          // Fallback if geometry is complex or invalid
+          const titleMatch = e.title.toLowerCase().includes(selectedCountry.properties.admin.toLowerCase());
+          const countryMatch = (e as any).country && (e as any).country.toLowerCase().includes(selectedCountry.properties.admin.toLowerCase());
+          if (!titleMatch && !countryMatch) return false;
+        }
       }
       
       if (activeTab === 'NETWORKS') return e.type === 'NETWORK_LINK';
@@ -145,7 +154,7 @@ export default function ArgusDashboard() {
           <h1 className="text-2xl font-bold tracking-widest text-primary uppercase neon-text drop-shadow-[0_0_15px_rgba(6,182,212,0.9)] group-hover:scale-[1.02] transition-transform">
             {t.title}
           </h1>
-          <Badge className="ml-3 bg-transparent text-primary border border-primary px-3 py-1 text-[12px] uppercase shadow-[0_0_15px_rgba(6,182,212,0.8)] animate-pulse-glow hidden md:flex rounded-full tracking-widest font-bold">
+          <Badge className="ml-3 bg-transparent text-yellow-500 border border-yellow-500 px-3 py-1 text-[12px] uppercase shadow-[0_0_15px_rgba(234,179,8,0.8)] animate-pulse-glow hidden md:flex rounded-full tracking-widest font-bold">
             v{versionData.version}
           </Badge>
         </div>
@@ -184,8 +193,8 @@ export default function ArgusDashboard() {
             <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-primary to-transparent opacity-50" />
             <div className="flex items-center gap-2">
               <Activity className="h-4 w-4 text-primary animate-pulse-glow" />
-              <h2 className="text-sm font-semibold uppercase tracking-wider text-primary neon-text">
-                {selectedCountry ? `${t.data}: ${selectedCountry}` : t.liveFeed}
+              <h2 className="text-xl font-bold tracking-widest uppercase neon-text flex items-center gap-2 drop-shadow-[0_0_10px_rgba(6,182,212,0.8)]">
+                {selectedCountry ? `${t.data}: ${selectedCountry.properties.admin}` : t.liveFeed}
               </h2>
               {selectedCountry && (
                 <button onClick={() => setSelectedCountry(null)} className="ml-auto text-xs text-destructive hover:text-red-400">{t.clearFilter}</button>

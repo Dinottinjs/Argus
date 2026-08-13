@@ -325,7 +325,7 @@ export default function SettingsPage() {
                   <div>
                     <div className="font-bold text-sm flex items-center gap-2">
                       {t.updateStatus}
-                      <span className="bg-primary/20 text-primary border border-primary/50 px-2 py-0.5 rounded text-[10px] uppercase shadow-[0_0_10px_rgba(6,182,212,0.6)] animate-pulse-glow">v{versionData.version}</span>
+                      <span className="bg-yellow-500/20 text-yellow-500 border border-yellow-500/50 px-2 py-0.5 rounded text-[10px] uppercase shadow-[0_0_10px_rgba(234,179,8,0.6)] animate-pulse-glow">v{versionData.version}</span>
                     </div>
                     <div className="text-xs text-muted-foreground">
                       {checkingUpdate ? t.checkUpdate : updateAvailable ? t.updateAvail : t.upToDate}

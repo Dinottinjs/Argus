@@ -38,7 +38,7 @@ interface ArgusStore {
   mapStyle: 'dark' | 'satellite';
   language: 'en' | 'de';
   theme: 'dark' | 'light';
-  selectedCountry: string | null;
+  selectedCountry: any | null;
   viewState: {
     longitude: number;
     latitude: number;
@@ -52,7 +52,7 @@ interface ArgusStore {
   };
   setViewState: (viewState: any) => void;
   flyTo: (longitude: number, latitude: number, zoom?: number) => void;
-  setSelectedCountry: (country: string | null) => void;
+  setSelectedCountry: (country: any | null) => void;
   setLanguage: (lang: 'en' | 'de') => void;
   setTheme: (theme: 'dark' | 'light') => void;
   initWorker: () => void;
