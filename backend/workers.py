@@ -45,7 +45,7 @@ async def usgs_worker(r: redis.Redis, active_interface: str = ""):
                         }
                         
                         seen_ids.add(feature["id"])
-                        if len(seen_ids) > 10000:
+                        if len(seen_ids) > 2000:
                             seen_ids.pop() # prevent memory leak
                             
                         payload = orjson.dumps({"type": "NEW_EVENT", "data": event})
@@ -94,6 +94,8 @@ async def eonet_worker(r: redis.Redis, active_interface: str = ""):
                         }
                         
                         seen_ids.add(e_data["id"])
+                        if len(seen_ids) > 2000:
+                            seen_ids.pop()
                         payload = orjson.dumps({"type": "NEW_EVENT", "data": event})
                         await r.publish("argus_live_events", payload)
                         
@@ -140,6 +142,8 @@ async def gdacs_worker(r: redis.Redis, active_interface: str = ""):
                 }
                 
                 seen_ids.add(entry_id)
+                if len(seen_ids) > 2000:
+                    seen_ids.pop()
                 payload = orjson.dumps({"type": "NEW_EVENT", "data": event})
                 await r.publish("argus_live_events", payload)
                 
@@ -202,6 +206,8 @@ async def conflict_worker(r: redis.Redis, active_interface: str = ""):
                         }
                         
                         seen_ids.add(conflict_id)
+                        if len(seen_ids) > 2000:
+                            seen_ids.pop()
                         await r.lpush("argus_events", orjson.dumps(event))
                         await r.ltrim("argus_events", 0, 99)
                         

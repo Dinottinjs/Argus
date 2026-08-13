@@ -11,6 +11,10 @@ services:
     depends_on:
       - argus-backend
     restart: always
+    deploy:
+      resources:
+        limits:
+          memory: 256M
 
   argus-backend:
     build:
@@ -24,12 +28,20 @@ services:
       - argus-redis
       - argus-db
     restart: always
+    deploy:
+      resources:
+        limits:
+          memory: 256M
 
   argus-redis:
     image: redis:7-alpine
     ports:
       - "6379:6379"
     restart: always
+    deploy:
+      resources:
+        limits:
+          memory: 128M
 
   argus-db:
     image: postgis/postgis:15-3.3-alpine
@@ -42,6 +54,10 @@ services:
     volumes:
       - argus-pgdata:/var/lib/postgresql/data
     restart: always
+    deploy:
+      resources:
+        limits:
+          memory: 512M
 
 volumes:
   argus-pgdata:
