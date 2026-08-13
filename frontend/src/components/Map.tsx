@@ -65,15 +65,15 @@ export default function GlobalMap() {
     viewState, setViewState, setSelectedCountry, selectedCountry
   } = useArgusStore();
   
-  // Convert zustand viewState (which has transitionDuration) into deck.gl props
   const deckViewState = React.useMemo(() => {
+    const baseState = { ...viewState, minZoom: 2.0, maxZoom: 20 };
     if (viewState.transitionDuration) {
       return {
-        ...viewState,
+        ...baseState,
         transitionInterpolator: new FlyToInterpolator()
       };
     }
-    return viewState;
+    return baseState;
   }, [viewState]);
 
   const layers = React.useMemo(() => {
@@ -156,10 +156,11 @@ export default function GlobalMap() {
   return (
     <div className="relative w-full h-full">
       <DeckGL
+        // @ts-ignore - DeckGL types for views prop are too strict
         views={[new MapView({ id: 'main', farZMultiplier: 100 })]}
         viewState={deckViewState}
         onViewStateChange={({viewState}) => setViewState(viewState)}
-        controller={{ minZoom: 2.0, maxZoom: 20 }}
+        controller={true}
         layers={layers}
         getTooltip={({object}: any) => {
           if (!object) return null;
