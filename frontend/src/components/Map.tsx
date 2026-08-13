@@ -1,63 +1,14 @@
 "use client";
 import React from 'react';
 import DeckGL from '@deck.gl/react';
-import { ScatterplotLayer, GeoJsonLayer, ArcLayer } from '@deck.gl/layers';
+import { ScatterplotLayer, GeoJsonLayer, ArcLayer, BitmapLayer } from '@deck.gl/layers';
+import { TileLayer } from '@deck.gl/geo-layers';
 import { HeatmapLayer } from '@deck.gl/aggregation-layers';
-import { Map as MapGL } from 'react-map-gl/maplibre';
 import { FlyToInterpolator, _GlobeView as GlobeView } from '@deck.gl/core';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import { useArgusStore } from '@/store/useArgusStore';
 
 // Removed INITIAL_VIEW_STATE as we now use controlled viewState from store
-
-const CARTO_DARK_MATTER = {
-  version: 8,
-  sources: {
-    'carto-dark': {
-      type: 'raster',
-      tiles: [
-        'https://a.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png',
-        'https://b.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png',
-        'https://c.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png',
-        'https://d.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png'
-      ],
-      tileSize: 256,
-      attribution: '© OpenStreetMap contributors, © CARTO'
-    }
-  },
-  layers: [
-    {
-      id: 'carto-dark-layer',
-      type: 'raster',
-      source: 'carto-dark',
-      minzoom: 0,
-      maxzoom: 22
-    }
-  ]
-};
-
-const ESRI_SATELLITE = {
-  version: 8,
-  sources: {
-    'esri-satellite': {
-      type: 'raster',
-      tiles: [
-        'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'
-      ],
-      tileSize: 256,
-      attribution: '© Esri, Maxar, Earthstar Geographics, USDA FSA, USGS, Aerogrid, IGN, IGP, and the GIS User Community'
-    }
-  },
-  layers: [
-    {
-      id: 'esri-satellite-layer',
-      type: 'raster',
-      source: 'esri-satellite',
-      minzoom: 0,
-      maxzoom: 22
-    }
-  ]
-};
 
 export default function GlobalMap() {
   const { 
@@ -78,6 +29,28 @@ export default function GlobalMap() {
 
   const layers = React.useMemo(() => {
     const activeLayers = [];
+    
+    // Base Map TileLayer (ESRI Satellite or Carto Dark)
+    const baseTileUrl = mapStyle === 'satellite' 
+      ? 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'
+      : 'https://a.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png';
+      
+    activeLayers.push(
+      new TileLayer({
+        id: 'base-map-tiles',
+        data: [baseTileUrl],
+        maxZoom: 19,
+        minZoom: 0,
+        renderSubLayers: props => {
+          const { boundingBox } = props.tile;
+          return new BitmapLayer(props, {
+            data: undefined,
+            image: props.data,
+            bounds: [boundingBox[0][0], boundingBox[0][1], boundingBox[1][0], boundingBox[1][1]]
+          });
+        }
+      })
+    );
     
     // Country Polygons
     activeLayers.push(

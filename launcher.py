@@ -8,9 +8,34 @@ import tkinter as tk
 from tkinter import font
 from PIL import Image, ImageTk
 
+def is_docker_running():
+    try:
+        subprocess.run(["docker", "info"], check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, creationflags=subprocess.CREATE_NO_WINDOW)
+        return True
+    except:
+        return False
+
+status_text_base = "BOOTING SYSTEM CORE"
+
 def launch_argus():
+    global status_text_base
     try:
         current_dir = os.path.dirname(os.path.abspath(__file__))
+        
+        # 0. Check and start Docker if needed
+        if not is_docker_running():
+            status_text_base = "STARTING DOCKER ENGINE"
+            docker_path = r"C:\Program Files\Docker\Docker\Docker Desktop.exe"
+            if os.path.exists(docker_path):
+                subprocess.Popen([docker_path])
+            
+            # Wait up to 120 seconds for docker to start
+            attempts = 0
+            while not is_docker_running() and attempts < 120:
+                time.sleep(1)
+                attempts += 1
+                
+        status_text_base = "BOOTING SYSTEM CORE"
         
         # 1. Start Docker Compose in background
         subprocess.run(
@@ -91,9 +116,10 @@ def main():
     
     # Simple animation loop
     def animate_status():
+        global status_text_base
         txt = status.cget("text")
-        if "..." in txt:
-            status.config(text="BOOTING SYSTEM CORE")
+        if "..." in txt or not txt.startswith(status_text_base):
+            status.config(text=status_text_base)
         else:
             status.config(text=txt + ".")
         root.after(500, animate_status)
