@@ -194,13 +194,15 @@ try {
     git fetch origin 2>&1 | Out-Null
     git reset --hard origin/main 2>&1 | Out-Null
     
-    
-    Write-Host "[*] Aktualisiere lokale Module (NPM & Python)..." -ForegroundColor Cyan
-    & npm install --prefix frontend --quiet
-    & python -m pip install -r backend/requirements.txt --upgrade --quiet
+    $versionFile = "frontend\src\version.json"
+    $version = "unknown"
+    if (Test-Path $versionFile) {
+        $json = Get-Content $versionFile | ConvertFrom-Json
+        $version = $json.version
+    }
     
     $ErrorActionPreference = $oldErrorAction
-    Write-Host "[+] Argus ist auf dem neuesten Stand!" -ForegroundColor Green
+    Write-Host "[+] Argus erfolgreich auf Version v$version aktualisiert!" -ForegroundColor Green
 } catch {
     Write-Host "[!] Auto-Update uebersprungen (Git evtl. nicht gefunden)." -ForegroundColor Yellow
 }
