@@ -24,6 +24,7 @@ class ConnectionManager:
         self.active_connections: set[WebSocket] = set()
         self.recent_events: list[bytes] = []
         self.recent_stats: bytes = None
+        self.recent_news: bytes = None
 
     async def connect(self, websocket: WebSocket):
         await websocket.accept()
@@ -33,6 +34,12 @@ class ConnectionManager:
         if self.recent_stats:
             try:
                 await websocket.send_bytes(self.recent_stats)
+            except Exception:
+                pass
+        
+        if self.recent_news:
+            try:
+                await websocket.send_bytes(self.recent_news)
             except Exception:
                 pass
                 
@@ -71,6 +78,8 @@ class ConnectionManager:
                         parsed = orjson.loads(data_bytes)
                         if parsed.get("type") == "STATS":
                             self.recent_stats = data_bytes
+                        elif parsed.get("type") == "NEWS_STATS":
+                            self.recent_news = data_bytes
                         elif parsed.get("type") == "NEW_EVENT":
                             self.recent_events.append(data_bytes)
                             if len(self.recent_events) > 100:

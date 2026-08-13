@@ -53,7 +53,8 @@ function connectWebSocket(url: string) {
           title: data.title,
           time: eventTime,
           coordinates: data.coordinates,
-          source: data.source
+          source: data.source,
+          is_conflict: data.is_conflict
         };
         
         // Deduplicate
@@ -68,6 +69,8 @@ function connectWebSocket(url: string) {
         }
       } else if (payload.type === "STATS") {
           self.postMessage({ type: 'UPDATE_STATS', stats: payload.data });
+      } else if (payload.type === "NEWS_STATS") {
+          self.postMessage({ type: 'UPDATE_NEWS_STATS', newsStats: payload.data });
       }
     } catch (e) {
       console.error("Worker Parse Error", e);

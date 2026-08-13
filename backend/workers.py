@@ -165,7 +165,7 @@ async def conflict_worker(r: redis.Redis, active_interface: str = ""):
     
     url = "https://query.wikidata.org/sparql"
     
-    async with httpx.AsyncClient(transport=transport, headers={"User-Agent": "Argus/1.0", "Accept": "application/sparql-results+json"}) as client:
+    async with httpx.AsyncClient(transport=transport, headers={"User-Agent": "Argus/1.0 (https://github.com/Dinottinjs/Argus; max@argus.local)", "Accept": "application/sparql-results+json"}) as client:
         while True:
             try:
                 resp = await client.get(url, params={"query": sparql_query}, timeout=30)
@@ -191,7 +191,7 @@ async def conflict_worker(r: redis.Redis, active_interface: str = ""):
                             "type": "CRITICAL",
                             "title": item.get("cLabel", {}).get("value", "Unknown Conflict"),
                             "coordinates": [lon, lat],
-                            "time": datetime.utcnow().strftime("%H:%M:%S UTC"),
+                            "timestamp": int(time.time() * 1000),
                             "id": f"WIKI-{conflict_id}",
                             "source": "UN OCHA ReliefWeb / Wikidata",
                             "is_conflict": True
@@ -202,7 +202,7 @@ async def conflict_worker(r: redis.Redis, active_interface: str = ""):
                         await r.ltrim("argus_events", 0, 99)
                         
                         event_payload = orjson.dumps({"type": "NEW_EVENT", "data": event})
-                        await r.publish("argus_live", event_payload)
+                        await r.publish("argus_live_events", event_payload)
                         await asyncio.sleep(0.5)
                         
             except Exception as e:
@@ -264,6 +264,39 @@ async def iss_worker(r: redis.Redis, active_interface: str = ""):
                 
             await asyncio.sleep(5)
 
+async def news_worker(r: redis.Redis, active_interface: str = ""):
+    print("Started Global Breaking News Worker")
+    
+    while True:
+        try:
+            # Parse BBC World News RSS
+            feed = await asyncio.to_thread(feedparser.parse, "http://feeds.bbci.co.uk/news/world/rss.xml")
+            
+            headlines = []
+            for entry in feed.entries[:5]:  # Top 5 breaking news
+                headlines.append({
+                    "title": entry.title,
+                    "link": entry.link,
+                    "time": entry.published if hasattr(entry, 'published') else ""
+                })
+                
+            # Simulate a "News Volume" metric based on number of recent entries
+            volume = len(feed.entries)
+            
+            news_stats = {
+                "headlines": headlines,
+                "volume": volume,
+                "source": "BBC World News"
+            }
+            
+            payload = orjson.dumps({"type": "NEWS_STATS", "data": news_stats})
+            await r.publish("argus_live_events", payload)
+            
+        except Exception as e:
+            print(f"News Worker Error: {e}")
+            
+        await asyncio.sleep(60) # Update every minute
+
 async def start_workers():
     r = await redis.from_url(REDIS_URL)
     # Could dynamically read interface from Redis config if needed
@@ -275,7 +308,8 @@ async def start_workers():
         gdacs_worker(r, active_interface),
         conflict_worker(r, active_interface),
         market_worker(r, active_interface),
-        iss_worker(r, active_interface)
+        iss_worker(r, active_interface),
+        news_worker(r, active_interface)
     )
 
 if __name__ == "__main__":

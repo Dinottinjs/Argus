@@ -6,7 +6,14 @@ interface ArgusEvent {
   type: string;
   title: string;
   time: string;
-  coordinates: number[];
+  coordinates: [number, number];
+  source: string;
+  is_conflict?: boolean;
+}
+
+export interface NewsStats {
+  headlines: { title: string; link: string; time: string }[];
+  volume: number;
   source: string;
 }
 
@@ -14,7 +21,9 @@ interface ArgusStore {
   events: ArgusEvent[];
   binaryPositions: Float32Array | null;
   status: string;
-  stats: any;
+  stats: { btc_price: number; eth_price: number; sentiment: number } | null;
+  newsStats: NewsStats | null;
+  isConnected: boolean;
   worker: Worker | null;
   showHeatmap: boolean;
   showScatterplot: boolean;
@@ -35,6 +44,8 @@ interface ArgusStore {
     bearing: number;
     transitionDuration?: number;
     transitionInterpolator?: any;
+    minZoom?: number;
+    maxZoom?: number;
   };
   setViewState: (viewState: any) => void;
   flyTo: (longitude: number, latitude: number, zoom?: number) => void;
@@ -61,6 +72,8 @@ export const useArgusStore = create<ArgusStore>()(
   binaryPositions: null,
   status: "OFFLINE",
   stats: null,
+  newsStats: null,
+  isConnected: false,
   worker: null,
   showHeatmap: true,
   showScatterplot: true,

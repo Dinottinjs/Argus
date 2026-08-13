@@ -15,7 +15,7 @@ const GlobalMap = dynamic(() => import("@/components/Map"), {
 
 export default function ArgusDashboard() {
   const { 
-    events, status, stats, 
+    events, status, stats, newsStats,
     showHeatmap, showScatterplot, 
     isPaused, reduceMotion,
     showLeftSidebar, showRightSidebar, showTicker,
@@ -59,6 +59,9 @@ export default function ArgusDashboard() {
         processed: "Processed",
         nodes: "Nodes",
         latency: "Latency",
+        latency: "Latency",
+        breakingNews: "BREAKING NEWS",
+        noNews: "No live feeds available.",
         ticker: "ARGUS TICKER",
         src: "SRC:",
         id: "ID:",
@@ -95,6 +98,9 @@ export default function ArgusDashboard() {
         processed: "Verarbeitet",
         nodes: "Knoten",
         latency: "Latenz",
+        latency: "Latenz",
+        breakingNews: "EILMELDUNGEN",
+        noNews: "Keine Live-Feeds verfügbar.",
         ticker: "ARGUS TICKER",
         src: "QUELLE:",
         id: "ID:",
@@ -286,11 +292,38 @@ export default function ArgusDashboard() {
           </div>
           
           <div className="mb-6 shrink-0">
+            <h2 className="text-sm font-semibold uppercase tracking-wider text-primary neon-text mb-4">{t.breakingNews}</h2>
+            {newsStats ? (
+              <div className="space-y-3">
+                <div className="glass-panel-hover p-3 rounded-lg border border-cyan-500/10">
+                  <div className="flex justify-between items-center mb-2">
+                     <span className="font-mono text-primary/70 text-xs">VOLUME (LIVE)</span>
+                     <span className="font-mono text-primary text-sm font-bold shadow-[0_0_10px_rgba(6,182,212,0.2)]">{newsStats.volume}</span>
+                  </div>
+                  <div className="h-1.5 w-full bg-black/50 rounded-full overflow-hidden flex border border-cyan-500/20">
+                     <div className="h-full bg-primary shadow-[0_0_10px_rgba(6,182,212,0.8)] transition-all duration-1000 animate-pulse" style={{ width: `${Math.min(100, newsStats.volume * 5)}%` }}></div>
+                  </div>
+                </div>
+                <div className="flex flex-col gap-2 mt-2">
+                  {newsStats.headlines.slice(0, 3).map((item, idx) => (
+                    <a key={idx} href={item.link} target="_blank" rel="noopener noreferrer" className="block text-[10px] font-mono text-slate-300 hover:text-primary transition-colors border-l-2 border-primary/50 pl-2 bg-black/20 py-1">
+                      <span className="text-primary/70 block mb-0.5">{item.time.split(' ').slice(0, 4).join(' ')}</span>
+                      <span className="truncate block w-full">{item.title}</span>
+                    </a>
+                  ))}
+                </div>
+              </div>
+            ) : (
+              <div className="text-xs text-primary/50 font-mono animate-pulse">{t.noNews}</div>
+            )}
+          </div>
+          
+          <div className="mb-6 shrink-0">
             <h2 className="text-sm font-semibold uppercase tracking-wider text-primary neon-text mb-4">{t.security}</h2>
             <div className="space-y-3">
               <div className="glass-panel-hover p-3 rounded-lg flex justify-between items-center border border-cyan-500/10">
                 <span className="font-mono text-primary/70 text-xs flex items-center"><ShieldAlert className="h-3 w-3 mr-2 text-destructive"/> {t.activeConflicts}</span>
-                <span className="font-mono text-destructive text-sm font-bold shadow-[0_0_10px_rgba(255,0,0,0.2)]">{events.filter(e => e.source.includes('OCHA')).length}</span>
+                <span className="font-mono text-destructive text-sm font-bold shadow-[0_0_10px_rgba(255,0,0,0.2)]">{events.filter(e => (e as any).is_conflict || e.source.includes('OCHA')).length}</span>
               </div>
               <div className="glass-panel-hover p-3 rounded-lg flex justify-between items-center border border-cyan-500/10">
                 <span className="font-mono text-primary/70 text-xs flex items-center"><AlertTriangle className="h-3 w-3 mr-2 text-orange-500"/> {t.disastersAlerts}</span>
@@ -318,8 +351,9 @@ export default function ArgusDashboard() {
 
       {showTicker && (
       <div className="h-8 w-full bg-black/90 border-t border-cyan-500/30 flex items-center overflow-hidden whitespace-nowrap shrink-0 shadow-[0_-5px_15px_rgba(0,0,0,0.8)] z-50 transition-all duration-300 ease-in-out relative">
-        <div className="bg-primary/20 text-primary font-bold px-4 py-1 text-xs uppercase tracking-widest border-r border-cyan-500/50 z-20 shrink-0 h-full flex items-center shadow-[5px_0_10px_rgba(0,0,0,0.5)] absolute left-0 top-0">
-          {t.ticker}
+        <div className="bg-black text-primary font-bold px-4 py-1 text-xs uppercase tracking-widest border-r border-cyan-500/50 z-20 shrink-0 h-full flex items-center shadow-[5px_0_10px_rgba(0,0,0,0.5)] absolute left-0 top-0">
+          <div className="absolute inset-0 bg-primary/10 pointer-events-none"></div>
+          <span className="relative z-10">{t.ticker}</span>
         </div>
         <div className={`flex-1 flex overflow-hidden w-full ${!reduceMotion ? 'animate-marquee' : ''}`} style={{ paddingLeft: '150px' }}>
           {/* Ticker Content Duplicated for seamless looping */}
