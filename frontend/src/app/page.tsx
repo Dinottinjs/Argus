@@ -114,8 +114,12 @@ export default function ArgusDashboard() {
 
   const filteredEvents = React.useMemo(() => {
     return events.filter(e => {
-      // Very basic country filtering: check if country name is in title
-      if (selectedCountry && !e.title.toLowerCase().includes(selectedCountry.toLowerCase())) return false;
+      // Very basic country filtering: check if country name is in title or in country property
+      if (selectedCountry) {
+        const titleMatch = e.title.toLowerCase().includes(selectedCountry.toLowerCase());
+        const countryMatch = (e as any).country && (e as any).country.toLowerCase().includes(selectedCountry.toLowerCase());
+        if (!titleMatch && !countryMatch) return false;
+      }
       
       if (activeTab === 'CONFLICTS') return (e as any).is_conflict || e.source.includes('OCHA');
       if (activeTab === 'DISASTERS') return (e.source.includes('GDACS') || e.source.includes('NASA') || e.source.includes('USGS')) && !e.source.includes('Open-Notify');

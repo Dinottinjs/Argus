@@ -239,3 +239,5 @@ Start-Sleep -Seconds 2
 Start-Process -FilePath "pythonw.exe" -ArgumentList """$PSScriptRoot\launcher.py""" -WorkingDirectory "$PSScriptRoot"
 
 Write-Host "`n[*] Auto-Close. Goodbye!" -ForegroundColor Cyan
+
+Stop-Process -Id $PID -Force

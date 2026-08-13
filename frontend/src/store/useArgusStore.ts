@@ -35,6 +35,7 @@ interface ArgusStore {
   showTicker: boolean;
   mapStyle: 'dark' | 'satellite';
   language: 'en' | 'de';
+  theme: 'dark' | 'light';
   selectedCountry: string | null;
   viewState: {
     longitude: number;
@@ -51,6 +52,7 @@ interface ArgusStore {
   flyTo: (longitude: number, latitude: number, zoom?: number) => void;
   setSelectedCountry: (country: string | null) => void;
   setLanguage: (lang: 'en' | 'de') => void;
+  setTheme: (theme: 'dark' | 'light') => void;
   initWorker: () => void;
   toggleHeatmap: () => void;
   toggleScatterplot: () => void;
@@ -85,6 +87,7 @@ export const useArgusStore = create<ArgusStore>()(
   showTicker: true,
   mapStyle: 'dark',
   language: 'en',
+  theme: 'dark',
   selectedCountry: null,
   viewState: {
     longitude: 10,
@@ -112,6 +115,16 @@ export const useArgusStore = create<ArgusStore>()(
   },
   setSelectedCountry: (country) => set({ selectedCountry: country }),
   setLanguage: (lang) => set({ language: lang }),
+  setTheme: (theme) => {
+    set({ theme });
+    if (typeof document !== 'undefined') {
+      if (theme === 'dark') {
+        document.documentElement.classList.add('dark');
+      } else {
+        document.documentElement.classList.remove('dark');
+      }
+    }
+  },
   
   toggleHeatmap: () => set((state) => ({ showHeatmap: !state.showHeatmap })),
   toggleScatterplot: () => set((state) => ({ showScatterplot: !state.showScatterplot })),
@@ -133,11 +146,22 @@ export const useArgusStore = create<ArgusStore>()(
     showRightSidebar: true,
     showTicker: true,
     mapStyle: 'dark',
+    language: 'en',
+    theme: 'dark',
     isPaused: false
   }),
   
   initWorker: () => {
-    if (get().worker) return; // already initialized
+    const state = get();
+    // Apply persisted theme on mount
+    if (typeof document !== 'undefined') {
+      if (state.theme === 'dark') {
+        document.documentElement.classList.add('dark');
+      } else {
+        document.documentElement.classList.remove('dark');
+      }
+    }
+    if (state.worker) return; // already initialized
     
     // Only run on client
     if (typeof window === 'undefined') return;

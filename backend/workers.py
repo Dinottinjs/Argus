@@ -154,12 +154,14 @@ async def conflict_worker(r: redis.Redis, active_interface: str = ""):
     seen_ids = set()
     
     sparql_query = """
-    SELECT ?c ?cLabel ?coord WHERE {
-      ?c wdt:P31 wd:Q350604; wdt:P580 ?start.
-      MINUS { ?c wdt:P582 ?end. }
-      OPTIONAL { ?c wdt:P625 ?coord. }
-      OPTIONAL { ?c wdt:P17 ?country. ?country wdt:P625 ?coord. }
-      SERVICE wikibase:label { bd:serviceParam wikibase:language "en,de". }
+    SELECT ?c ?cLabel ?coord ?countryLabel WHERE {
+      ?c wdt:P31 wd:Q180684. # Instance of: armed conflict
+      ?c wdt:P580 ?start.    # Start time
+      OPTIONAL { ?c wdt:P582 ?end. } # End time
+      FILTER(!bound(?end))   # Only ongoing
+      ?c wdt:P625 ?coord.    # Coordinates
+      OPTIONAL { ?c wdt:P17 ?country. ?country rdfs:label ?countryLabel. FILTER(LANG(?countryLabel) = "en") }
+      SERVICE wikibase:label { bd:serviceParam wikibase:language "en". }
     } LIMIT 150
     """
     
@@ -191,10 +193,12 @@ async def conflict_worker(r: redis.Redis, active_interface: str = ""):
                             "type": "CRITICAL",
                             "title": item.get("cLabel", {}).get("value", "Unknown Conflict"),
                             "coordinates": [lon, lat],
+                            "time": item.get("countryLabel", {}).get("value", ""),
                             "timestamp": int(time.time() * 1000),
                             "id": f"WIKI-{conflict_id}",
                             "source": "UN OCHA ReliefWeb / Wikidata",
-                            "is_conflict": True
+                            "is_conflict": True,
+                            "country": item.get("countryLabel", {}).get("value", "")
                         }
                         
                         seen_ids.add(conflict_id)

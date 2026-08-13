@@ -108,7 +108,13 @@ export default function GlobalMap() {
           // If we have binary positions, we use them for ultra-fast GPU rendering
           data: binaryPositions ? { length: binaryPositions.length / 2, attributes: { getPosition: { value: binaryPositions, size: 2 } } } : events.filter(e => e.coordinates && e.coordinates.length === 2 && e.coordinates[0] !== 0),
           getPosition: binaryPositions ? undefined : ((d: any) => d.coordinates),
-          getFillColor: binaryPositions ? [255, 50, 50, 200] : ((d: any) => d.type === 'CRITICAL' ? [255, 0, 0, 200] : d.type === 'HIGH' ? [255, 165, 0, 180] : [0, 255, 255, 150]),
+          getFillColor: binaryPositions ? [255, 50, 50, 200] : ((d: any) => {
+            if (d.type === 'CRITICAL' || d.is_conflict) return [255, 30, 30, 200]; // Vibrant Red
+            if (d.type === 'HIGH') return [255, 120, 0, 200]; // Vibrant Orange
+            if (d.type === 'MEDIUM' || d.type === 'NEWS') return [255, 230, 0, 180]; // Vibrant Yellow
+            if (d.type === 'LOW' || d.type === 'INFO') return [0, 255, 100, 150]; // Vibrant Green
+            return [0, 200, 255, 150]; // Default Cyan
+          }),
           getRadius: binaryPositions ? 150000 : ((d: any) => d.type === 'CRITICAL' ? 300000 : d.type === 'HIGH' ? 150000 : 80000),
           radiusMinPixels: 4,
           radiusMaxPixels: 20,
@@ -156,9 +162,9 @@ export default function GlobalMap() {
   return (
     <div className="relative w-full h-full">
       <DeckGL
-        // @ts-ignore - DeckGL types for views prop are too strict
-        views={[new MapView({ id: 'main', farZMultiplier: 100 })]}
-        // @ts-ignore - Single viewState is supported at runtime
+        // @ts-ignore
+        views={[new MapView({ id: 'main', farZMultiplier: 100, repeat: false })]}
+        // @ts-ignore
         viewState={deckViewState}
         onViewStateChange={({viewState}) => setViewState(viewState)}
         controller={true}

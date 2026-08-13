@@ -54,7 +54,8 @@ function connectWebSocket(url: string) {
           time: eventTime,
           coordinates: data.coordinates,
           source: data.source,
-          is_conflict: data.is_conflict
+          is_conflict: data.is_conflict,
+          country: data.country
         };
         
         // Deduplicate

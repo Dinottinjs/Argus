@@ -83,16 +83,19 @@ class LocalAPIHandler(BaseHTTPRequestHandler):
         elif self.path == '/update_status':
             self._set_headers()
             update_available = False
+            preview = ""
             try:
                 current_dir = os.path.dirname(os.path.abspath(__file__))
+                subprocess.run(["git", "fetch", "origin", "main"], cwd=current_dir, timeout=10)
                 local_hash = subprocess.run(["git", "rev-parse", "HEAD"], cwd=current_dir, capture_output=True, text=True, timeout=5).stdout.strip()
-                remote_hash = subprocess.run(["git", "ls-remote", "origin", "-h", "refs/heads/main"], cwd=current_dir, capture_output=True, text=True, timeout=10).stdout.strip().split('\t')[0]
+                remote_hash = subprocess.run(["git", "rev-parse", "origin/main"], cwd=current_dir, capture_output=True, text=True, timeout=5).stdout.strip()
                 
                 if local_hash and remote_hash and local_hash != remote_hash:
                     update_available = True
+                    preview = subprocess.run(["git", "log", "--oneline", f"{local_hash}..{remote_hash}"], cwd=current_dir, capture_output=True, text=True, timeout=5).stdout.strip()
             except Exception as e:
                 print(f"Update check error: {e}")
-            self.wfile.write(json.dumps({"update_available": update_available}).encode('utf-8'))
+            self.wfile.write(json.dumps({"update_available": update_available, "preview": preview}).encode('utf-8'))
         else:
             self._set_headers(404)
 
@@ -143,10 +146,10 @@ def perform_uninstall():
 def perform_update():
     print("Starting update sequence...")
     try:
-        # Launch install.bat in a new console
+        # Launch updater_ui.py natively
         current_dir = os.path.dirname(os.path.abspath(__file__))
-        bat_path = os.path.join(current_dir, "install.bat")
-        subprocess.Popen(f'cmd.exe /c start "" "{bat_path}"', shell=True, cwd=current_dir)
+        updater_path = os.path.join(current_dir, "updater_ui.py")
+        subprocess.Popen([sys.executable, updater_path], cwd=current_dir)
     except Exception as e:
         print(f"Error starting update: {e}")
         

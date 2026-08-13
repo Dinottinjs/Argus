@@ -12,7 +12,7 @@ export default function SettingsPage() {
     reduceMotion, localOnlyMode, toggleReduceMotion, toggleLocalOnlyMode,
     showLeftSidebar, showRightSidebar, showTicker,
     toggleLeftSidebar, toggleRightSidebar, toggleTicker, resetUI,
-    language, setLanguage
+    language, setLanguage, theme, setTheme
   } = useArgusStore();
   const [interfaces, setInterfaces] = useState<any[]>([]);
   const [selectedInterface, setSelectedInterface] = useState<string>("");
@@ -21,6 +21,7 @@ export default function SettingsPage() {
   const [updateAvailable, setUpdateAvailable] = useState(false);
   const [checkingUpdate, setCheckingUpdate] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
+  const [updatePreview, setUpdatePreview] = useState("");
 
   const checkForUpdates = () => {
     setCheckingUpdate(true);
@@ -28,6 +29,7 @@ export default function SettingsPage() {
       .then(res => res.json())
       .then(data => {
         setUpdateAvailable(data.update_available);
+        if (data.preview) setUpdatePreview(data.preview);
         setCheckingUpdate(false);
       })
       .catch(() => setCheckingUpdate(false));
@@ -62,6 +64,10 @@ export default function SettingsPage() {
       uninstall: "Uninstall System Completely",
       languageLabel: "Language / Sprache",
       secLabel: "Security & Accessibility",
+      themeToggle: "Theme Mode",
+      themeDesc: "Switch between dark mode and light mode across the entire application.",
+      light: "Light",
+      dark: "Dark",
       reduceMotion: "Reduce Motion & Animations",
       reduceMotionDesc: "Disables the Bloomberg ticker scrolling and CSS pulse effects to reduce GPU load and prevent motion sickness.",
       enabled: "Enabled",
@@ -104,6 +110,10 @@ export default function SettingsPage() {
       uninstall: "System vollständig deinstallieren",
       languageLabel: "Sprache / Language",
       secLabel: "Sicherheit & Barrierefreiheit",
+      themeToggle: "Farbdesign (Theme)",
+      themeDesc: "Wechsle zwischen dem dunklen und hellen Design in der gesamten App.",
+      light: "Hell",
+      dark: "Dunkel",
       reduceMotion: "Animationen & Bewegung reduzieren",
       reduceMotionDesc: "Deaktiviert den Bloomberg-Ticker und CSS-Pulseffekte, um die GPU zu entlasten und Motion Sickness zu vermeiden.",
       enabled: "Aktiviert",
@@ -192,10 +202,10 @@ export default function SettingsPage() {
       </header>
 
       {/* MAIN */}
-      <main className="flex-1 overflow-y-auto p-10 max-w-4xl mx-auto w-full">
-        <div className="space-y-12">
+      <main className="flex-1 overflow-y-auto p-10 max-w-6xl mx-auto w-full">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                 {/* Language / Sprache */}
-          <section className="p-6 border border-border bg-card/50 rounded-lg">
+          <section className="p-6 border border-border bg-card/50 rounded-lg flex flex-col">
             <div className="flex items-center gap-3 mb-4">
               <svg xmlns="http://www.w3.org/2000/svg" className="text-primary h-6 w-6" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/><path d="M2 12h20"/></svg>
               <h2 className="text-lg font-bold uppercase tracking-wider text-muted-foreground">{t.languageLabel}</h2>
@@ -214,7 +224,7 @@ export default function SettingsPage() {
           </section>
           
           {/* Network Settings */}
-          <section className="p-6 border border-border bg-card/50 rounded-lg">
+          <section className="p-6 border border-border bg-card/50 rounded-lg flex flex-col">
             <div className="flex items-center gap-3 mb-4">
               <Network className="text-primary h-6 w-6" />
               <h2 className="text-lg font-bold uppercase tracking-wider text-muted-foreground">{t.network}</h2>
@@ -242,13 +252,27 @@ export default function SettingsPage() {
           </section>
 
           {/* Security & Accessibility Settings */}
-          <section className="p-6 border border-border bg-card/50 rounded-lg mt-8">
+          <section className="p-6 border border-border bg-card/50 rounded-lg flex flex-col">
             <div className="flex items-center gap-3 mb-4">
               <ShieldAlert className="text-primary h-6 w-6" />
               <h2 className="text-lg font-bold uppercase tracking-wider text-muted-foreground">{t.secLabel}</h2>
             </div>
             
-            <div className="space-y-6">
+            <div className="space-y-6 flex-1">
+              <div className="flex items-center justify-between p-4 border border-cyan-500/20 bg-black/40 rounded-lg">
+                <div>
+                  <h3 className="font-bold text-primary">{t.themeToggle}</h3>
+                  <p className="text-xs text-muted-foreground mt-1">{t.themeDesc}</p>
+                </div>
+                <Button 
+                  onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+                  variant="outline" 
+                  className="border-cyan-500/30 text-primary w-24"
+                >
+                  {theme === 'dark' ? t.dark : t.light}
+                </Button>
+              </div>
+
               <div className="flex items-center justify-between p-4 border border-cyan-500/20 bg-black/40 rounded-lg">
                 <div>
                   <h3 className="font-bold text-primary">{t.reduceMotion}</h3>
@@ -280,7 +304,7 @@ export default function SettingsPage() {
           </section>
 
           {/* System Updates */}
-          <section className="p-6 border border-border bg-card/50 rounded-lg">
+          <section className="p-6 border border-border bg-card/50 rounded-lg flex flex-col md:col-span-2">
             <div className="flex items-center gap-3 mb-4">
               <RefreshCw className={`text-primary h-6 w-6 ${checkingUpdate ? 'animate-spin' : ''}`} />
               <h2 className="text-lg font-bold uppercase tracking-wider text-muted-foreground">{t.systemUpdate}</h2>
@@ -323,11 +347,18 @@ export default function SettingsPage() {
                   )}
                 </div>
               </div>
+              
+              {updateAvailable && updatePreview && (
+                <div className="p-4 bg-black/60 border border-orange-500/30 rounded-md">
+                   <h3 className="text-orange-500 font-mono text-xs mb-2">UPDATE PREVIEW (CHANGELOG)</h3>
+                   <pre className="text-slate-300 font-mono text-xs whitespace-pre-wrap">{updatePreview}</pre>
+                </div>
+              )}
             </div>
           </section>
           
           {/* Layout Customization */}
-          <section className="p-6 border border-border bg-card/50 rounded-lg mt-8">
+          <section className="p-6 border border-border bg-card/50 rounded-lg flex flex-col">
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-3">
                 <svg xmlns="http://www.w3.org/2000/svg" className="text-primary h-6 w-6" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M3 9h18"/><path d="M9 21V9"/></svg>
@@ -384,7 +415,7 @@ export default function SettingsPage() {
           </section>
 
           {/* Danger Zone */}
-          <section className="p-6 border border-destructive/50 bg-destructive/10 rounded-lg mt-12">
+          <section className="p-6 border border-destructive/50 bg-destructive/10 rounded-lg flex flex-col">
             <div className="flex items-center gap-3 mb-4">
               <Trash2 className="text-destructive h-6 w-6" />
               <h2 className="text-lg font-bold uppercase tracking-wider text-destructive">{t.dangerZone}</h2>

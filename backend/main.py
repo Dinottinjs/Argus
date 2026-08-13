@@ -82,7 +82,7 @@ class ConnectionManager:
                             self.recent_news = data_bytes
                         elif parsed.get("type") == "NEW_EVENT":
                             self.recent_events.append(data_bytes)
-                            if len(self.recent_events) > 100:
+                            if len(self.recent_events) > 1000:
                                 self.recent_events.pop(0)
                     except Exception:
                         pass
