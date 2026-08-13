@@ -78,7 +78,9 @@ export const useArgusStore = create<ArgusStore>()(
     latitude: 30,
     zoom: 2.0,
     pitch: 45,
-    bearing: 0
+    bearing: 0,
+    minZoom: 1.8,
+    maxZoom: 20
   },
   
   setViewState: (viewState) => set({ viewState }),
