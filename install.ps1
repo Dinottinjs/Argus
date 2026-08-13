@@ -191,7 +191,7 @@ try {
     $ErrorActionPreference = 'Continue'
     
     # 100% force update, dropping local changes to prevent conflicts
-    git fetch origin main 2>&1 | Out-Null
+    git fetch origin 2>&1 | Out-Null
     git reset --hard origin/main 2>&1 | Out-Null
     
     

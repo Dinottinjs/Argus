@@ -86,7 +86,7 @@ class LocalAPIHandler(BaseHTTPRequestHandler):
             preview = ""
             try:
                 current_dir = os.path.dirname(os.path.abspath(__file__))
-                subprocess.run(["git", "fetch", "origin", "main"], cwd=current_dir, timeout=10)
+                subprocess.run(["git", "fetch", "origin"], cwd=current_dir, timeout=10)
                 
                 # Compare versions using version.json
                 local_version_file = os.path.join(current_dir, "frontend", "src", "version.json")
