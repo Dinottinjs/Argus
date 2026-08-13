@@ -30,7 +30,7 @@ async def usgs_worker(r: redis.Redis, active_interface: str = ""):
                             continue
                             
                         mag = feature["properties"]["mag"]
-                        if mag is None:
+                        if mag is None or mag < 4.5:
                             continue
                             
                         severity = "CRITICAL" if mag >= 6.0 else "HIGH" if mag >= 4.5 else "MEDIUM" if mag >= 2.5 else "INFO"
@@ -82,7 +82,10 @@ async def eonet_worker(r: redis.Redis, active_interface: str = ""):
                         coord = geometry[-1]["coordinates"]
                         
                         category = e_data["categories"][0]["id"] if e_data.get("categories") else "unknown"
-                        severity = "HIGH" if category in ["wildfires", "volcanoes", "severeStorms"] else "MEDIUM"
+                        if category not in ["wildfires", "severeStorms", "earthquakes"]:
+                            continue
+                            
+                        severity = "HIGH" if category in ["wildfires", "severeStorms", "earthquakes"] else "MEDIUM"
                         
                         event = {
                             "type": severity,
@@ -229,13 +232,24 @@ async def market_worker(r: redis.Redis, active_interface: str = ""):
             try:
                 # Fetch BTC and ETH prices
                 resp = await client.get("https://api.binance.com/api/v3/ticker/price?symbols=[\"BTCUSDT\",\"ETHUSDT\"]", timeout=5)
+                
+                # Fetch real global sentiment (Fear & Greed Index)
+                sentiment_val = 50
+                try:
+                    fng_resp = await client.get("https://api.alternative.me/fng/", timeout=5)
+                    if fng_resp.status_code == 200:
+                        fng_data = orjson.loads(fng_resp.content)
+                        sentiment_val = int(fng_data["data"][0]["value"])
+                except Exception as e:
+                    print(f"Sentiment Fetch Error: {e}")
+
                 if resp.status_code == 200:
                     data = orjson.loads(resp.content)
                     
                     stats = {
                         "btc_price": float(data[0]["price"]),
                         "eth_price": float(data[1]["price"]),
-                        "sentiment": 65 + (float(data[0]["price"]) % 10), # Simulated sentiment based on price fluctuation
+                        "sentiment": sentiment_val,
                     }
                     
                     payload = orjson.dumps({"type": "STATS", "data": stats})

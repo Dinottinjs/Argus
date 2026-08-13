@@ -126,6 +126,13 @@ def main():
         
     animate_status()
     
+    # Start the Local Companion App (Tray) in the background so it can provide network interfaces
+    try:
+        tray_script = os.path.join(os.path.dirname(os.path.abspath(__file__)), "argus_tray.py")
+        subprocess.Popen([sys.executable, tray_script], creationflags=subprocess.CREATE_NO_WINDOW)
+    except Exception as e:
+        print(f"Failed to start tray: {e}")
+    
     # Start background boot process
     threading.Thread(target=launch_argus, daemon=True).start()
     

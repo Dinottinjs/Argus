@@ -61,7 +61,7 @@ export default function GlobalMap() {
         getLineColor: [6, 182, 212, 100], // Cyan outlines
         getFillColor: (d: any) => {
           const isSelected = selectedCountry && d.properties.admin === selectedCountry.properties.admin;
-          return isSelected ? [6, 182, 212, 50] : [15, 25, 45, 255]; // Solid dark blue earth
+          return isSelected ? [6, 182, 212, 50] : [0, 0, 0, 0]; // Transparent to show satellite map and prevent triangulation artifact
         },
         pickable: true,
         onClick: (info: any) => {

@@ -234,22 +234,51 @@ export default function SettingsPage() {
               {t.networkDesc}
             </p>
             
-            <div className="flex flex-col sm:flex-row gap-4 items-center">
-              <select 
-                className="flex-1 bg-input/50 border border-border rounded-md px-3 py-2 text-sm focus:ring-primary focus:border-primary outline-none"
-                value={selectedInterface}
-                onChange={(e) => setSelectedInterface(e.target.value)}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+              <div 
+                onClick={() => setSelectedInterface("")}
+                className={`cursor-pointer p-4 rounded-lg border-2 transition-all duration-300 ${
+                  selectedInterface === "" 
+                    ? "border-primary bg-primary/20 shadow-[0_0_15px_rgba(6,182,212,0.3)]" 
+                    : "border-border bg-black/40 hover:border-primary/50"
+                }`}
               >
-                <option value="">-- Default (OS Routing) --</option>
-                {interfaces.map((iface, idx) => (
-                  <option key={idx} value={iface.ip}>{iface.name} ({iface.ip})</option>
-                ))}
-              </select>
-              <Button onClick={handleSaveNetwork} className="bg-primary text-primary-foreground hover:bg-primary/90">
+                <div className="flex items-center gap-3 mb-2">
+                  <Network className={`h-5 w-5 ${selectedInterface === "" ? "text-primary" : "text-muted-foreground"}`} />
+                  <h3 className={`font-bold ${selectedInterface === "" ? "text-primary" : "text-foreground"}`}>
+                    Default OS Routing
+                  </h3>
+                </div>
+                <p className="text-xs text-muted-foreground">Standard System Network</p>
+              </div>
+
+              {interfaces.map((iface, idx) => (
+                <div 
+                  key={idx}
+                  onClick={() => setSelectedInterface(iface.ip)}
+                  className={`cursor-pointer p-4 rounded-lg border-2 transition-all duration-300 ${
+                    selectedInterface === iface.ip 
+                      ? "border-primary bg-primary/20 shadow-[0_0_15px_rgba(6,182,212,0.3)]" 
+                      : "border-border bg-black/40 hover:border-primary/50"
+                  }`}
+                >
+                  <div className="flex items-center gap-3 mb-2">
+                    <div className={`h-2 w-2 rounded-full ${selectedInterface === iface.ip ? "bg-primary animate-pulse" : "bg-muted-foreground"}`}></div>
+                    <h3 className={`font-bold ${selectedInterface === iface.ip ? "text-primary" : "text-foreground"} truncate`}>
+                      {iface.name}
+                    </h3>
+                  </div>
+                  <p className="text-xs text-muted-foreground font-mono">{iface.ip}</p>
+                </div>
+              ))}
+            </div>
+
+            <div className="flex justify-end">
+              <Button onClick={handleSaveNetwork} className="bg-primary text-primary-foreground hover:bg-primary/90 font-bold px-8 shadow-[0_0_10px_rgba(6,182,212,0.5)]">
                 {t.apply}
               </Button>
             </div>
-            {statusMsg && <p className="text-green-500 mt-4 text-sm font-bold">{statusMsg}</p>}
+            {statusMsg && <p className="text-green-500 mt-4 text-sm font-bold text-right">{statusMsg}</p>}
           </section>
 
           {/* Security & Accessibility Settings */}
