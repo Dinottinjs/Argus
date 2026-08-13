@@ -194,6 +194,11 @@ try {
     git fetch origin main 2>&1 | Out-Null
     git reset --hard origin/main 2>&1 | Out-Null
     
+    
+    Write-Host "[*] Aktualisiere lokale Module (NPM & Python)..." -ForegroundColor Cyan
+    & npm install --prefix frontend --quiet
+    & python -m pip install -r backend/requirements.txt --upgrade --quiet
+    
     $ErrorActionPreference = $oldErrorAction
     Write-Host "[+] Argus ist auf dem neuesten Stand!" -ForegroundColor Green
 } catch {

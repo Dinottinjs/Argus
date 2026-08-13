@@ -30,10 +30,8 @@ export default function GlobalMap() {
   const layers = React.useMemo(() => {
     const activeLayers = [];
     
-    // Base Map TileLayer (ESRI Satellite or Carto Dark)
-    const baseTileUrl = mapStyle === 'satellite' 
-      ? 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'
-      : 'https://a.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png';
+    // Base Map TileLayer (ESRI Satellite)
+    const baseTileUrl = 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}';
       
     activeLayers.push(
       new TileLayer({
@@ -88,9 +86,9 @@ export default function GlobalMap() {
             if (d.type === 'LOW' || d.type === 'INFO') return [0, 255, 100, 150]; // Vibrant Green
             return [0, 200, 255, 150]; // Default Cyan
           }),
-          getRadius: binaryPositions ? 150000 : ((d: any) => d.type === 'CRITICAL' ? 300000 : d.type === 'HIGH' ? 150000 : 80000),
-          radiusMinPixels: 4,
-          radiusMaxPixels: 20,
+          getRadius: binaryPositions ? 150000 : ((d: any) => d.type === 'CRITICAL' ? 400000 : d.type === 'HIGH' ? 200000 : 100000),
+          radiusMinPixels: 6,
+          radiusMaxPixels: 30,
           pickable: !binaryPositions // Disable picking on raw binary layer to save CPU
         })
       );
@@ -103,9 +101,9 @@ export default function GlobalMap() {
           data: events.filter(e => e.coordinates && e.coordinates.length === 2 && e.coordinates[0] !== 0 && e.type !== 'ISS_TRACKER'),
           getPosition: (d: any) => d.coordinates,
           getWeight: (d: any) => d.type === 'CRITICAL' ? 10 : d.type === 'HIGH' ? 5 : 1,
-          radiusPixels: 40,
-          intensity: 1,
-          threshold: 0.1
+          radiusPixels: 60,
+          intensity: 2,
+          threshold: 0.05
         })
       );
     }
@@ -142,6 +140,7 @@ export default function GlobalMap() {
           getSourceColor: [6, 182, 212, 255], // Cyan origin
           getTargetColor: [255, 50, 50, 255], // Red destination
           getWidth: 3,
+          getHeight: 0.05,
           greatCircle: true,
           pickable: true
         })

@@ -67,7 +67,8 @@ export default function ArgusDashboard() {
         id: "ID:",
         critical: "CRITICAL",
         high: "HIGH",
-        loadingMap: "Loading Core Visualizer..."
+        loadingMap: "Loading Core Visualizer...",
+        networks: "NETWORKS"
       },
       de: {
         title: "Argus Kommando",
@@ -105,7 +106,8 @@ export default function ArgusDashboard() {
         id: "ID:",
         critical: "KRITISCH",
         high: "HOCH",
-        loadingMap: "Lade Kern-Visualisierer..."
+        loadingMap: "Lade Kern-Visualisierer...",
+        networks: "NETZWERKE"
       }
     };
     return dict[language];
@@ -115,12 +117,14 @@ export default function ArgusDashboard() {
 
   const filteredEvents = React.useMemo(() => {
     return events.filter(e => {
-      // Very basic country filtering: check if country name is in title or in country property
       if (selectedCountry) {
         const titleMatch = e.title.toLowerCase().includes(selectedCountry.toLowerCase());
         const countryMatch = (e as any).country && (e as any).country.toLowerCase().includes(selectedCountry.toLowerCase());
         if (!titleMatch && !countryMatch) return false;
       }
+      
+      if (activeTab === 'NETWORKS') return e.type === 'NETWORK_LINK';
+      if (e.type === 'NETWORK_LINK') return false;
       
       if (activeTab === 'CONFLICTS') return (e as any).is_conflict || e.source.includes('OCHA');
       if (activeTab === 'DISASTERS') return (e.source.includes('GDACS') || e.source.includes('NASA') || e.source.includes('USGS')) && !e.source.includes('Open-Notify');
@@ -137,7 +141,7 @@ export default function ArgusDashboard() {
       {/* HEADER / TOP BAR */}
       <header className="h-16 glass-panel flex items-center justify-between px-6 z-10 shrink-0 border-b-0 shadow-md">
         <div className="flex items-center gap-4 group cursor-default ml-2">
-          <ShieldAlert className="text-primary h-8 w-8 animate-pulse-glow drop-shadow-[0_0_10px_rgba(6,182,212,0.8)]" />
+          <img src="/logo.png" alt="Argus Logo" className="h-8 w-8 animate-pulse-glow drop-shadow-[0_0_10px_rgba(6,182,212,0.8)]" />
           <h1 className="text-2xl font-bold tracking-widest text-primary uppercase neon-text drop-shadow-[0_0_15px_rgba(6,182,212,0.9)] group-hover:scale-[1.02] transition-transform">
             {t.title}
           </h1>
@@ -191,6 +195,7 @@ export default function ArgusDashboard() {
               <button onClick={() => setActiveTab('ALL')} className={`text-[10px] px-2 py-1 rounded border font-mono transition-all ${activeTab === 'ALL' ? 'bg-primary/20 border-primary text-primary shadow-[0_0_10px_rgba(6,182,212,0.5)]' : 'border-transparent text-primary/50 hover:text-primary/80'}`}>{t.all}</button>
               <button onClick={() => setActiveTab('CONFLICTS')} className={`text-[10px] px-2 py-1 rounded border font-mono transition-all ${activeTab === 'CONFLICTS' ? 'bg-destructive/20 border-destructive text-destructive shadow-[0_0_10px_rgba(255,0,0,0.5)]' : 'border-transparent text-destructive/50 hover:text-destructive/80'}`}>{t.conflicts}</button>
               <button onClick={() => setActiveTab('DISASTERS')} className={`text-[10px] px-2 py-1 rounded border font-mono transition-all ${activeTab === 'DISASTERS' ? 'bg-orange-500/20 border-orange-500 text-orange-400 shadow-[0_0_10px_rgba(255,165,0,0.5)]' : 'border-transparent text-orange-500/50 hover:text-orange-400/80'}`}>{t.disasters}</button>
+              <button onClick={() => setActiveTab('NETWORKS')} className={`text-[10px] px-2 py-1 rounded border font-mono transition-all ${activeTab === 'NETWORKS' ? 'bg-indigo-500/20 border-indigo-500 text-indigo-400 shadow-[0_0_10px_rgba(99,102,241,0.5)]' : 'border-transparent text-indigo-500/50 hover:text-indigo-400/80'}`}>{t.networks}</button>
             </div>
           </div>
           <div className="flex-1 overflow-y-auto overflow-x-hidden p-4 space-y-3 custom-scrollbar relative z-10">
@@ -243,14 +248,6 @@ export default function ArgusDashboard() {
           
           {/* Overlay UI on map */}
           <div className="absolute bottom-6 left-6 z-20 flex flex-wrap gap-2">
-            <Button 
-              variant="secondary" 
-              size="sm" 
-              onClick={toggleMapStyle}
-              className={`glass-panel-hover transition-all bg-black/60 text-slate-200 border-cyan-500/50 shadow-[0_0_15px_rgba(255,255,255,0.1)]`}
-            >
-              <Globe2 className="h-4 w-4 mr-2" /> {mapStyle === 'dark' ? t.satellite : t.darkMode}
-            </Button>
             <Button 
               variant="secondary" 
               size="sm" 
@@ -378,7 +375,7 @@ export default function ArgusDashboard() {
               <span className="text-green-400 font-mono text-xs font-bold">BTC/USDT ${stats?.btc_price?.toLocaleString() || "---"} ▲</span>
               <span className="text-green-400 font-mono text-xs font-bold">ETH/USDT ${stats?.eth_price?.toLocaleString() || "---"} ▲</span>
               <span className="text-primary/50 font-mono text-xs">|</span>
-              {events.slice(0, 10).map((event, idx) => (
+              {events.filter(e => e.type !== 'NETWORK_LINK').slice(0, 10).map((event, idx) => (
                 <span key={`ticker-${loopId}-${event.id}-${idx}`} className="text-xs font-mono text-slate-300 flex-shrink-0">
                   <span className={event.type === 'CRITICAL' ? 'text-destructive' : event.type === 'HIGH' ? 'text-orange-500' : 'text-primary'}>[{event.type === 'CRITICAL' ? t.critical : event.type === 'HIGH' ? t.high : event.type}]</span> {event.title}
                   <span className="text-primary/50 ml-8">|</span>
